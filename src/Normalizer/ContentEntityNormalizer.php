@@ -35,7 +35,9 @@ class ContentEntityNormalizer extends NormalizerBase {
 
         // Merge empty defaults for easy access
         return $bundleConfig + [
-            'include' => []
+            'include' => [],
+            'rename' => [],
+            'pluck' => []
         ];
     }
 
@@ -54,7 +56,7 @@ class ContentEntityNormalizer extends NormalizerBase {
         } else {
             // We are the top level and may want to impose our own config
             $config = $this->configFor($object);
-            $context['jsonapi_api'] = $config;
+            $context['jsonapi_config'] = $config;
         }
 
         $attributes = [];
@@ -64,11 +66,20 @@ class ContentEntityNormalizer extends NormalizerBase {
             }
             $path = $context['jsonapi_path'];
             $path[] = $name;
+            $innerContext = $context;
+            $innerContext['jsonapi_path'] = $path;
+
+            // 'include' fields get copied across
             if (in_array(join('.', $path), $config['include'])) {
-                $innerContext = $context;
-                $innerContext['jsonapi_path'] = $path;
                 $attributes[$name] = $this->serializer->normalize($field, $format, $innerContext);
             }
+
+            // 'rename' fields get copied across under a new name
+            if (isset($config['rename'][join('.', $path)])) {
+                $attributes[$config['rename'][join('.', $path)]] = $this->serializer->normalize($field, $format, $innerContext);
+            }
+
+            // 'pluck' fields get flattened into
         }
 
         if ($context['jsonapi_path'] == '') {
