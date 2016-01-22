@@ -1,0 +1,10 @@
+services:
+  jsonapi.normalizer.entity_reference_field_item:
+    class: Drupal\jsonapi\Normalizer\EntityReferenceFieldItemNormalizer
+    tags:
+      - { name: normalizer, priority: 10 }
+  jsonapi.encoder.json:
+    class: Drupal\jsonapi\Encoder\JsonApiEncoder
+    tags:
+      - { name: encoder, format: jsonapi }
+

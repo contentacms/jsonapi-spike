@@ -1,0 +1,6 @@
+name: JSONAPI Normalizer
+type: module
+description: Provides a service for normalizing data to match the JSONAPI spec
+package: Web services
+version: '8.x-0.1'
+core: 8.x
