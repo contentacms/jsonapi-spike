@@ -22,7 +22,7 @@ class EntityReferenceFieldItemNormalizer extends NormalizerBase {
    */
   protected $supportedInterfaceOrClass = EntityReferenceItem::class;
 
-  protected static $format = array('jsonapi');
+  protected $format = array('jsonapi');
     
     
   /**

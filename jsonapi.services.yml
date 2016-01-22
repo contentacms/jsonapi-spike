@@ -7,4 +7,18 @@ services:
     class: Drupal\jsonapi\Encoder\JsonApiEncoder
     tags:
       - { name: encoder, format: jsonapi }
+  jsonapi.normalizer.field_item:
+    class: Drupal\jsonapi\Normalizer\FieldItemNormalizer
+    tags:
+      - { name: normalizer, priority: 10 }
+  jsonapi.normalizer.content_entity:
+      class: Drupal\jsonapi\Normalizer\ContentEntityNormalizer
+      tags:
+        - { name: normalizer, priority: 10 }
+  jsonapi.normalizer.field_item_list:
+      class: Drupal\jsonapi\Normalizer\FieldItemListNormalizer
+      tags:
+        - { name: normalizer, priority: 21 }
+
+
 
