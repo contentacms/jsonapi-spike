@@ -17,13 +17,16 @@ class HardCodedConfig {
     public static $config = [
         'node' => [
             'article' => [
-                'include' => ['title', 'body', 'field_topic', 'field_topic.name'],
+                'include' => ['title'],
                 'rename' => [
-                    'field_byline' => 'byline'
-                ],
-                'pluck' => [
+                    'field_byline' => 'byline',
                     'field_topic.name' => 'topic'
                 ]
+            ]
+        ],
+        'taxonomy_term' => [
+            'topics' => [
+                'include' => ['name', 'tid']
             ]
         ]
     ];
