@@ -51,6 +51,7 @@ class ContentEntityNormalizer extends NormalizerBase {
             $include[] = $fromName;
         }
         $output['rename'] = $config['rename'];
+        $output['type'] = $config['type'];
 
         foreach ($include as $path) {
             $context = &$output;
@@ -70,6 +71,8 @@ class ContentEntityNormalizer extends NormalizerBase {
 
     protected function grabIncluded($object, $included, $context) {
         $attributes = [];
+        $relationships = [];
+
         foreach ($object as $name => $field) {
             if (!$field->access('view', $context['account'])) {
                 continue;
@@ -81,26 +84,40 @@ class ContentEntityNormalizer extends NormalizerBase {
                 if (is_array($included[$name])) {
                     $innerContext['jsonapi_config'] = $included[$name];
                 }
-                $attributes[$name] = $this->serializer->normalize($field, $format, $innerContext);
+                $serialized = $this->serializer->normalize($field, $format, $innerContext);
+                if (isset($serialized['meta']['d8_jsonapi_entity'])) {
+                    // we found another entity, so this is a relationship
+                    unset($serialized['meta']['d8_jsonapi_entity']);
+                    if (count($serialized['meta']) == 0) {
+                        unset($serialized['meta']);
+                    }
+                    $relationships[$name] = $serialized;
+                } else {
+                    // not another entity, so this is an attribute
+                    $attributes[$name] = $serialized;
+                }
             }
         }
-        return $attributes;
+
+        $record = ['attributes' => &$attributes];
+        if (count($relationships) > 0) {
+            $record['relationships'] = &$relationships;
+        }
+
+        return $record;
     }
 
-    protected function doRenaming($attributes, $renames) {
+    protected function doRenaming($record, $renames) {
         foreach ($renames as $fromPath => $toPath) {
-            $context = &$attributes;
-            $parts = explode(".", $toPath);
-            while (count($parts) > 1) {
-                $key = array_shift($parts);
-                if (!isset($context[$key])) {
-                    $context[$key] = [];
+            foreach (['attributes', 'relationships'] as $section) {
+                if (isset($record[$section][$fromPath])) {
+                    $context = &$record[$section];
+                    $context[$toPath] = &$context[$fromPath];
+                    unset($context[$fromPath]);
                 }
-                $context = &$context[$key];
             }
-            $context[$parts[0]] = $this->readPathAndPrune($attributes, explode(".", $fromPath));
         }
-        return $attributes;
+        return $record;
     }
 
     protected function readPathAndPrune(&$context, $pathParts) {
@@ -135,25 +152,31 @@ class ContentEntityNormalizer extends NormalizerBase {
             $config = $this->expandConfig($this->configFor($object));
         }
 
-        $attributes = $this->grabIncluded($object, $config['include'], $context);
-        $attributes = $this->doRenaming($attributes, $config['rename']);
+        $record = $this->grabIncluded($object, $config['include'], $context);
+        $record = $this->doRenaming($record, $config['rename']);
 
         if (false) {
-            $attributes['_debug'] = $config;
-            $attributes['_debug']['entityTypeId'] = $object->getEntityTypeId();
-            $attributes['_debug']['bundleId'] = $object->bundle();
-            $attributes['_debug']['keys'] = [];
+            $debug = $config;
+            $debug['entityTypeId'] = $object->getEntityTypeId();
+            $debug['bundleId'] = $object->bundle();
+            $debug['keys'] = [];
             foreach ($object as $name => $field) {
-                $attributes['_debug']['keys'][] = $name;
+                $debug['keys'][] = $name;
             }
-
+            if (!isset($record['meta'])) {
+                $record['meta'] = [];
+            }
+            $record['meta']['debug'] = $debug;
         }
 
-        if (!$context['has_parent']) {
-            return array('data' => $attributes);
-        } else {
-            return $attributes;
+        $record['id'] = $this->readPathAndPrune($record['attributes'], ['id']);
+        $record['type'] = $config['type'];
+        $response = [ 'data'  => &$record ];
+
+        if ($context['has_parent']) {
+            $response['meta'] = ['d8_jsonapi_entity' => true];
         }
+        return $response;
     }
 
 }
