@@ -3,8 +3,11 @@ jsonapi.node:
   defaults:
     _controller: '\Drupal\jsonapi\Controller\NodeController::handle'
     _method: 'GET'
+    nid: null
   requirements:
     _access: 'TRUE'
+
+
 
 route_callbacks:
   - '\Drupal\jsonapi\Routing\Routes::routes'

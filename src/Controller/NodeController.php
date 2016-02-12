@@ -10,6 +10,7 @@ use Drupal\jsonapi\Response;
 use Drupal\jsonapi\DocumentContext;
 use Drupal\jsonapi\HardCodedConfig;
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\Entity\Node;
@@ -28,9 +29,9 @@ class NodeController implements ContainerAwareInterface {
         $this->config = new HardCodedConfig();
     }
 
-    public function handle($nid, Request $request) {
+    public function handle(RouteMatchInterface $route_match, Request $request) {
 
-        $response = $this->makeResponse($nid, $request);
+        $response = $this->makeResponse($route_match, $request);
 
         if ($response instanceof Response && $data = $response->getResponseData()) {
             $serializer = $this->container->get('serializer');
@@ -41,7 +42,8 @@ class NodeController implements ContainerAwareInterface {
         return $response;
     }
 
-    protected function makeResponse($nid, $request) {
+    protected function makeResponse($route_match, $request) {
+        $nid = $route_match->getRawParameters()->get('nid');
         $node = Node::load($nid);
 
         if (!$node) {
