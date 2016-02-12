@@ -72,6 +72,9 @@ class NodeController implements ContainerAwareInterface {
                     }, explode(',', $value));
                 }
             }
+            if ($key == 'fields') {
+                $output['fields'] = array_map(function($fieldList){ return explode(',', $fieldList); }, $value);
+            }
         }
         return $output;
     }

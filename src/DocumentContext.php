@@ -33,6 +33,9 @@ class DocumentContext {
             }
         }
     }
+    public function shouldIncludeField($type, $field) {
+        return $field == 'id' || !isset($this->options['fields'][$type]) || in_array($field, $this->options['fields'][$type]);
+    }
     public function allIncluded() {
         $output = [];
         foreach($this->included as $type => $values) {

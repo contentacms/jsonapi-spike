@@ -34,7 +34,7 @@ class ContentEntityNormalizer extends NormalizerBase {
         $record['meta'][$key] = $value;
     }
 
-    protected function normalizeFields($object, $fields, $context, $doc) {
+    protected function normalizeFields($object, $config, $context, $doc) {
         $attributes = [];
         $relationships = [];
         $unused = [];
@@ -44,15 +44,17 @@ class ContentEntityNormalizer extends NormalizerBase {
                 continue;
             }
 
-            if (isset($fields[$name])) {
-                $outputName = $fields[$name]["as"];
-                $innerContext = $context;
-                $innerContext['jsonapi_path'][] = $outputName;
-                $child = $this->serializer->normalize($field, $format, $innerContext);
-                if ($child instanceof JsonApiEntityReference) {
-                    $relationships[$outputName] = $child->normalize();
-                } else {
-                    $attributes[$outputName] = $child;
+            if (isset($config['fields'][$name])) {
+                $outputName = $config['fields'][$name]["as"];
+                if (!$doc || $doc->shouldIncludeField($config['type'], $outputName)) {
+                    $innerContext = $context;
+                    $innerContext['jsonapi_path'][] = $outputName;
+                    $child = $this->serializer->normalize($field, $format, $innerContext);
+                    if ($child instanceof JsonApiEntityReference) {
+                        $relationships[$outputName] = $child->normalize();
+                    } else {
+                        $attributes[$outputName] = $child;
+                    }
                 }
             } else {
                 $unused[] = $name;
@@ -87,7 +89,7 @@ class ContentEntityNormalizer extends NormalizerBase {
         }
 
         $config = $this->config->configFor($object);
-        $record = $this->normalizeFields($object, $config['fields'], $context, $doc);
+        $record = $this->normalizeFields($object, $config, $context, $doc);
         $record['id'] = $record['attributes']['id'];
         unset($record['attributes']['id']);
         $record['type'] = $config['type'];
