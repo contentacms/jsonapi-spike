@@ -7,12 +7,6 @@
 
 namespace Drupal\jsonapi;
 
-function identity($key) {
-    return function($object) {
-        return $object->get($key);
-    };
-}
-
 class HardCodedConfig {
     public static $config = [
         'node' => [
