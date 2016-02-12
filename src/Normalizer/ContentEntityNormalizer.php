@@ -45,13 +45,14 @@ class ContentEntityNormalizer extends NormalizerBase {
             }
 
             if (isset($fields[$name])) {
+                $outputName = $fields[$name]["as"];
                 $innerContext = $context;
-                $innerContext['jsonapi_path'][] = $name;
+                $innerContext['jsonapi_path'][] = $outputName;
                 $child = $this->serializer->normalize($field, $format, $innerContext);
                 if ($child instanceof JsonApiEntityReference) {
-                    $relationships[$fields[$name]["as"]] = $child->normalize();
+                    $relationships[$outputName] = $child->normalize();
                 } else {
-                    $attributes[$fields[$name]["as"]] = $child;
+                    $attributes[$outputName] = $child;
                 }
             } else {
                 $unused[] = $name;
