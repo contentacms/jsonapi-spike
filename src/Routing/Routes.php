@@ -15,9 +15,7 @@ class Routes {
    * {@inheritdoc}
    */
   public function routes() {
-    $routes = array();
-    // Declares a single route under the name 'example.content'.
-    // Returns an array of Route objects.
+    $routes = [];
     $routes['jsonapi.dynamic'] = new Route(
       // Path to attach this route to:
       '/example',
