@@ -47,7 +47,8 @@ class ContentEntityNormalizer extends NormalizerBase {
         ];
     }
 
-    protected function normalizeFields($object, $config, $context, $doc) {
+    protected function normalizeFields($object, $context, $doc) {
+        $config = $this->config->configFor($object);
         $attributes = [];
         $relationships = [];
         $unused = [];
@@ -110,8 +111,7 @@ class ContentEntityNormalizer extends NormalizerBase {
             $doc = null;
         }
 
-        $config = $this->config->configFor($object);
-        $record = $this->normalizeFields($object, $config, $context, $doc);
+        $record = $this->normalizeFields($object, $context, $doc);
         $record['id'] = $record['attributes']['id'];
         unset($record['attributes']['id']);
         $record['type'] = $record['attributes']['type'];
