@@ -34,7 +34,7 @@ class ContentEntityNormalizer extends NormalizerBase {
         $record['meta'][$key] = $value;
     }
 
-    protected function normalizeFields($object, $fields, $context) {
+    protected function normalizeFields($object, $fields, $context, $doc) {
         $attributes = [];
         $relationships = [];
         $unused = [];
@@ -63,7 +63,7 @@ class ContentEntityNormalizer extends NormalizerBase {
             $record['relationships'] = &$relationships;
         }
 
-        if ($context['debug']) {
+        if ($doc && $doc->debugEnabled()) {
             $this->addMeta($record, 'unused-fields', $unused);
         }
 
@@ -79,15 +79,19 @@ class ContentEntityNormalizer extends NormalizerBase {
             'jsonapi_path' => [] # Defaults to top level path, unless we've inherited one already.
         );
 
+        if (isset($context['jsonapi_document'])) {
+            $doc = $context['jsonapi_document'];
+        } else {
+            $doc = null;
+        }
+
         $config = $this->config->configFor($object);
-
-
-        $record = $this->normalizeFields($object, $config['fields'], $context);
+        $record = $this->normalizeFields($object, $config['fields'], $context, $doc);
         $record['id'] = $record['attributes']['id'];
         unset($record['attributes']['id']);
         $record['type'] = $config['type'];
 
-        if ($context['debug']) {
+        if ($doc && $doc->debugEnabled()) {
             $this->addMeta($record, 'bundle', $object->bundle());
             $this->addMeta($record, 'entity-type', $object->getEntityTypeId());
         }

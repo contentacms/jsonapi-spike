@@ -25,8 +25,9 @@ class DocumentContextNormalizer extends NormalizerBase {
         $attributes = [
             "data" => $this->serializer->normalize($document->data, $format, $context),
         ];
-        if ($document->meta) {
-            $attributes["meta"] = $document->meta;
+        $meta = $document->meta();
+        if ($meta) {
+            $attributes["meta"] = $meta;
         }
         $included = $document->allIncluded();
         if (count($included) > 0) {

@@ -3,9 +3,10 @@
 namespace Drupal\jsonapi;
 
 class DocumentContext {
-    public function __construct($data, $meta) {
+    public function __construct($data, $meta, $options) {
         $this->data = $data;
         $this->meta = $meta;
+        $this->options = $options;
         $this->included = [];
     }
     public function addIncluded($record) {
@@ -29,5 +30,20 @@ class DocumentContext {
             }
         }
         return $output;
+    }
+    public function debugEnabled() {
+        return $this->options['debug'];
+    }
+    public function addMeta($key, $value) {
+        if (!$this->meta) {
+            $this->meta = [];
+        }
+        $this->meta[$key] = $value;
+    }
+    public function meta() {
+        if ($this->debugEnabled()) {
+            $this->addMeta('options', $this->options);
+        }
+        return $this->meta;
     }
 }

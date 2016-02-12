@@ -30,22 +30,18 @@ class NodeController implements ContainerAwareInterface {
 
     public function handle($nid, Request $request) {
 
-        $context = [
-            "debug" => !!$request->query->get("debug")
-        ];
-
-        $response = $this->makeResponse($nid);
+        $response = $this->makeResponse($nid, $request);
 
         if ($response instanceof Response && $data = $response->getResponseData()) {
             $serializer = $this->container->get('serializer');
-            $output = $serializer->serialize($data, "jsonapi", $context);
+            $output = $serializer->serialize($data, "jsonapi");
             $response->setContent($output);
             $response->headers->set('Content-Type', 'application/vnd.api+json');
         }
         return $response;
     }
 
-    protected function makeResponse($nid) {
+    protected function makeResponse($nid, $request) {
         $node = Node::load($nid);
 
         if (!$node) {
@@ -58,7 +54,24 @@ class NodeController implements ContainerAwareInterface {
             # http://jsonapi.org/format/#error-objects
             return new Response(["errors" => [["title" => "Access denied to node", "detail" => "Access denied to node with nid=" . $nid . "."]]], 403);
         }
-        return new Response(new DocumentContext($node), 200);
+        return new Response(new DocumentContext($node, [], $this->optionsFor($request)), 200);
+    }
+
+    protected function optionsFor($request) {
+        $output = [];
+        foreach($request->query->all() as $key => $value) {
+            if ($key == 'debug') {
+                $output['debug'] = true;
+            }
+            if ($key == 'include') {
+                if ($value == "") {
+                    $output['include'] = [];
+                } else {
+                    $output['include'] = explode(',', $value);
+                }
+            }
+        }
+        return $output;
     }
 
 }
