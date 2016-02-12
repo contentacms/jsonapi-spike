@@ -7,11 +7,13 @@
 namespace Drupal\jsonapi\Controller;
 
 use Drupal\jsonapi\Response;
+use Drupal\jsonapi\HardCodedConfig;
 use Drupal\Component\Serialization\Json;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Drupal\node\Entity\Node;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+
 
 /**
  * DemoController.
@@ -20,9 +22,6 @@ class NodeController implements ContainerAwareInterface {
 
     use ContainerAwareTrait;
 
-    /**
-     * Generates an example page.
-     */
     public function handle($nid) {
 
         $response = $this->makeResponse($nid);
@@ -50,11 +49,14 @@ class NodeController implements ContainerAwareInterface {
             return new Response(["errors" => [["title" => "Access denied to node", "detail" => "Access denied to node with nid=" . $nid . "."]]], 403);
         }
 
-        // $content["meta"] = [ "keys" => [] ];
-        // foreach ($node as $name => $field) {
-        //     $content["meta"]["keys"][] = $name;
-        // }
-        return new Response([ "node" => $node, "normal" => $this->container->get('serializer')->normalize($node) ], 200);
+        $config = HardCodedConfig::configFor($node);
+
+        $meta = [ "keys" => [] ];
+        foreach ($node as $name => $field) {
+            $meta["keys"][] = $name;
+        }
+        $meta['config'] = $config;
+        return new Response([ "data" => $node, "meta" => $meta ], 200);
     }
 
 }

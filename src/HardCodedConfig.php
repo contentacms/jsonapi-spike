@@ -8,7 +8,7 @@
 namespace Drupal\jsonapi;
 
 class HardCodedConfig {
-    public static $config = [
+    private static $_config = [
         'node' => [
             'article' => [
                 'type' => 'articles',
@@ -30,4 +30,16 @@ class HardCodedConfig {
             ]
         ]
     ];
+
+    public static function configFor($object) {
+        $entityTypeConfig = self::$_config[$object->getEntityTypeId()];
+        if (!$entityTypeConfig) {
+            return array();
+        }
+        $bundleConfig = $entityTypeConfig[$object->bundle()];
+        if (!bundleConfig) {
+            return array();
+        }
+        return $bundleConfig;
+    }
 }

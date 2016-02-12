@@ -30,18 +30,6 @@ class ContentEntityNormalizer extends NormalizerBase {
         ];
     }
 
-    protected function configFor($object) {
-        $entityTypeConfig = HardCodedConfig::$config[$object->getEntityTypeId()];
-        if (!$entityTypeConfig) {
-            return array();
-        }
-        $bundleConfig = $entityTypeConfig[$object->bundle()];
-        if (!bundleConfig) {
-            return array();
-        }
-        return $bundleConfig;
-    }
-
     protected function expandConfig($config) {
         $output = $this->emptyConfig();
 
@@ -149,7 +137,7 @@ class ContentEntityNormalizer extends NormalizerBase {
             $config = $context['jsonapi_config'];
         } else {
             // Look up this object's own configuration
-            $config = $this->expandConfig($this->configFor($object));
+            $config = $this->expandConfig(HardCodedConfig::configFor($object));
         }
 
         $record = $this->grabIncluded($object, $config['include'], $context);
