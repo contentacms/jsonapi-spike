@@ -23,16 +23,15 @@ class EntityReferenceFieldItemNormalizer extends NormalizerBase {
   protected $supportedInterfaceOrClass = EntityReferenceItem::class;
 
   protected $format = array('jsonapi');
-    
-    
+
   /**
    * {@inheritdoc}
    */
   public function normalize($field_item, $format = NULL, array $context = []) {
-    $entity = $field_item->get('entity')->getValue();
-    if ($entity) {
-      return $this->serializer->normalize($entity, $format, $context);
-    }
+      $entity = $field_item->get('entity')->getValue();
+      if ($entity) {
+          return $this->serializer->normalize($entity, $format, $context);
+      }
   }
 
 }

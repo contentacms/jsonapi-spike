@@ -22,7 +22,6 @@ class HardCodedConfig {
         ],
         'taxonomy_term' => [
             'topics' => [
-                'type' => 'topics',
                 'include' => ['name'],
                 'rename' => [
                     'tid' => 'id'
@@ -31,8 +30,12 @@ class HardCodedConfig {
         ]
     ];
 
-    public static function configFor($object) {
-        $entityTypeConfig = self::$_config[$object->getEntityTypeId()];
+    public function __construct() {
+        $this->config = $this->normalizeConfig(self::$_config);
+    }
+
+    public function configFor($object) {
+        $entityTypeConfig = $this->config[$object->getEntityTypeId()];
         if (!$entityTypeConfig) {
             return array();
         }
@@ -41,5 +44,42 @@ class HardCodedConfig {
             return array();
         }
         return $bundleConfig;
+    }
+
+    private function normalizeConfig($config) {
+        $normalized = [];
+        foreach($config as $entityType => $entityTypeConfig) {
+            $normalized[$entityType] = [];
+            foreach($entityTypeConfig as $bundleId => $bundleConfig) {
+                $normalized[$entityType][$bundleId] = $this->normalizeBundleConfig($bundleId, $bundleConfig);
+
+            }
+        }
+        return $normalized;
+    }
+
+    private function normalizeBundleConfig($bundleId, $bundleConfig) {
+        $output = [];
+        if (isset($bundleConfig['type'])) {
+            $output['type'] = $bundleConfig['type'];
+        } else {
+            $output['type'] = $bundleId;
+        }
+        $output['fields'] = [];
+        if (isset($bundleConfig['include'])) {
+            foreach ($bundleConfig['include'] as $key) {
+                $output['fields'][$key] = [
+                    "as" => $key
+                ];
+            }
+        }
+        if (isset($bundleConfig['rename'])) {
+            foreach ($bundleConfig['rename'] as $key => $value) {
+                $output['fields'][$key] = [
+                    "as" => $value
+                ];
+            }
+        }
+        return $output;
     }
 }

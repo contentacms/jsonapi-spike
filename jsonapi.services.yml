@@ -19,6 +19,10 @@ services:
       class: Drupal\jsonapi\Normalizer\FieldItemListNormalizer
       tags:
         - { name: normalizer, priority: 21 }
+  jsonapi.normalizer.document_context:
+      class: Drupal\jsonapi\Normalizer\DocumentContextNormalizer
+      tags:
+        - { name: normalizer, priority: 0 }
 
 
 
