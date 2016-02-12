@@ -34,6 +34,19 @@ class ContentEntityNormalizer extends NormalizerBase {
         $record['meta'][$key] = $value;
     }
 
+    // This exposes fields (in the JSONAPI sense) that are not fields
+    // in the Drupal sense. They are eligible to be included as record
+    // attributes or serve as the record's `type` or `id`.
+    protected function coreFields($object) {
+        $bundleLabel = strtolower(preg_replace('/\s/', '-', $object->getEntityType()->getBundleLabel()));
+        return [
+            'entity-type' => $object->getEntityTypeId(),
+            'id' => $object->id(),
+            'bundle-label' => $bundleLabel,
+            $bundleLabel => $object->bundle()
+        ];
+    }
+
     protected function normalizeFields($object, $config, $context, $doc) {
         $attributes = [];
         $relationships = [];
@@ -56,6 +69,15 @@ class ContentEntityNormalizer extends NormalizerBase {
                         $attributes[$outputName] = $child;
                     }
                 }
+            } else {
+                $unused[] = $name;
+            }
+        }
+
+        foreach($this->coreFields($object) as $name => $value) {
+            if (isset($config['fields'][$name])) {
+                $outputName = $config['fields'][$name]["as"];
+                $attributes[$outputName] = $value;
             } else {
                 $unused[] = $name;
             }
@@ -92,13 +114,8 @@ class ContentEntityNormalizer extends NormalizerBase {
         $record = $this->normalizeFields($object, $config, $context, $doc);
         $record['id'] = $record['attributes']['id'];
         unset($record['attributes']['id']);
-        $record['type'] = $config['type'];
-
-        if ($doc && $doc->debugEnabled()) {
-            $this->addMeta($record, 'bundle', $object->bundle());
-            $this->addMeta($record, 'entity-type', $object->getEntityTypeId());
-        }
-
+        $record['type'] = $record['attributes']['type'];
+        unset($record['attributes']['type']);
 
         if (count($context['jsonapi_path']) == 0) {
             return $record;

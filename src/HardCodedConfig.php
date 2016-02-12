@@ -11,12 +11,11 @@ class HardCodedConfig {
     private static $_config = [
         'node' => [
             'article' => [
-                'type' => 'articles',
                 'fields' => [
                     'title' => 'title',
-                    'nid' => 'id',
                     'field_byline' => 'byline',
-                    'field_topic' => 'topic'
+                    'field_topic' => 'topic',
+                    'content-type' => 'type'
                 ],
                 'defaultInclude' => ['topic']
             ]
@@ -25,7 +24,7 @@ class HardCodedConfig {
             'topics' => [
                 'fields' => [
                     'name' => 'name',
-                    'tid' => 'id'
+                    'vocabulary' => 'type'
                 ]
             ]
         ]
@@ -61,11 +60,6 @@ class HardCodedConfig {
 
     private function normalizeBundleConfig($bundleId, $bundleConfig) {
         $output = [];
-        if (isset($bundleConfig['type'])) {
-            $output['type'] = $bundleConfig['type'];
-        } else {
-            $output['type'] = $bundleId;
-        }
 
         if (isset($bundleConfig['defaultInclude'])) {
             $output['defaultInclude'] = array_map(function($path){
@@ -75,14 +69,35 @@ class HardCodedConfig {
             $output['defaultInclude'] = [];
         }
 
-        $output['fields'] = [];
+        // These are the two mandatory fields we must expose to
+        // JSONAPI. When the user doesn't configure them, we can
+        // provide good defaults.
+        $sawType = false;
+        $sawId = false;
+
         if (isset($bundleConfig['fields'])) {
             foreach ($bundleConfig['fields'] as $key => $value) {
+                if ($value == 'id') {
+                    $sawId = true;
+                }
+                if ($value == 'type') {
+                    $sawType = true;
+                }
                 $output['fields'][$key] = [
                     "as" => $value
                 ];
             }
         }
+
+        if (!$sawType) {
+            $output['fields']['entity-type'] = [ 'as' => 'type' ];
+        }
+
+        if (!$sawId) {
+            $output['fields']['id'] = [ 'as' => 'id' ];
+        }
+
+
         return $output;
     }
 }
