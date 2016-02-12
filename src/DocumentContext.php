@@ -3,10 +3,11 @@
 namespace Drupal\jsonapi;
 
 class DocumentContext {
-    public function __construct($data, $meta, $options) {
+    public function __construct($data, $options, $config) {
         $this->data = $data;
-        $this->meta = $meta;
+        $this->meta = null;
         $this->options = $options;
+        $this->config = $config;
         $this->included = [];
     }
     public function addIncluded($record) {
@@ -20,7 +21,17 @@ class DocumentContext {
         }
     }
     public function shouldInclude($path) {
-        return true;
+        if (isset($this->options['include'])) {
+            $include = $this->options['include'];
+        } else {
+            $include = $this->config['defaultInclude'];
+        }
+
+        foreach($include as $included) {
+            if ($path == array_slice($included, 0, count($path))) {
+                return true;
+            }
+        }
     }
     public function allIncluded() {
         $output = [];
@@ -40,9 +51,11 @@ class DocumentContext {
         }
         $this->meta[$key] = $value;
     }
+
     public function meta() {
         if ($this->debugEnabled()) {
             $this->addMeta('options', $this->options);
+            $this->addMeta('config', $this->config);
         }
         return $this->meta;
     }

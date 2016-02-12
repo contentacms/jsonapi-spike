@@ -54,7 +54,7 @@ class NodeController implements ContainerAwareInterface {
             # http://jsonapi.org/format/#error-objects
             return new Response(["errors" => [["title" => "Access denied to node", "detail" => "Access denied to node with nid=" . $nid . "."]]], 403);
         }
-        return new Response(new DocumentContext($node, [], $this->optionsFor($request)), 200);
+        return new Response(new DocumentContext($node, $this->optionsFor($request), $this->config->configFor($node)), 200);
     }
 
     protected function optionsFor($request) {
@@ -67,7 +67,9 @@ class NodeController implements ContainerAwareInterface {
                 if ($value == "") {
                     $output['include'] = [];
                 } else {
-                    $output['include'] = explode(',', $value);
+                    $output['include'] = array_map(function($path) {
+                        return explode('.', $path);
+                    }, explode(',', $value));
                 }
             }
         }

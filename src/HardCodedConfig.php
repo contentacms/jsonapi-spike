@@ -12,18 +12,19 @@ class HardCodedConfig {
         'node' => [
             'article' => [
                 'type' => 'articles',
-                'include' => ['title'],
-                'rename' => [
+                'fields' => [
+                    'title' => 'title',
                     'nid' => 'id',
                     'field_byline' => 'byline',
                     'field_topic' => 'topic'
-                ]
+                ],
+                'defaultInclude' => ['topic']
             ]
         ],
         'taxonomy_term' => [
             'topics' => [
-                'include' => ['name'],
-                'rename' => [
+                'fields' => [
+                    'name' => 'name',
                     'tid' => 'id'
                 ]
             ]
@@ -65,16 +66,18 @@ class HardCodedConfig {
         } else {
             $output['type'] = $bundleId;
         }
-        $output['fields'] = [];
-        if (isset($bundleConfig['include'])) {
-            foreach ($bundleConfig['include'] as $key) {
-                $output['fields'][$key] = [
-                    "as" => $key
-                ];
-            }
+
+        if (isset($bundleConfig['defaultInclude'])) {
+            $output['defaultInclude'] = array_map(function($path){
+                return explode('.', $path);
+            }, $bundleConfig['defaultInclude']);
+        } else {
+            $output['defaultInclude'] = [];
         }
-        if (isset($bundleConfig['rename'])) {
-            foreach ($bundleConfig['rename'] as $key => $value) {
+
+        $output['fields'] = [];
+        if (isset($bundleConfig['fields'])) {
+            foreach ($bundleConfig['fields'] as $key => $value) {
                 $output['fields'][$key] = [
                     "as" => $value
                 ];
