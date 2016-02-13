@@ -23,7 +23,6 @@ class EndpointController implements ContainerAwareInterface {
     use ContainerAwareTrait;
 
     public function __construct() {
-        // unused?
         $this->config = new HardCodedConfig();
     }
 
