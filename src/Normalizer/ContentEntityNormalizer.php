@@ -44,6 +44,17 @@ class ContentEntityNormalizer extends NormalizerBase {
         ];
     }
 
+    protected function findType($object, $coreFields, $fields) {
+        foreach($fields as $key => $value) {
+            if ($value['as'] == 'type') {
+                if (isset($coreFields[$key])) {
+                    return $coreFields[$key];
+                }
+                return $this->serializer->normalize($object->get($key), 'jsonapi', null);
+            }
+        }
+    }
+
     protected function normalizeFields($object, $context, $doc) {
         $attributes = [];
         $relationships = [];
@@ -51,10 +62,14 @@ class ContentEntityNormalizer extends NormalizerBase {
         $coreFields = $this->coreFields($object);
 
         $fields = $doc->fieldsFor($coreFields['entity-type'], $coreFields['bundle']);
-        $defaultInclude = null;
         if (count($context['jsonapi_path']) == 0) {
-            $defaultInclude = $doc->defaultIncludeFor($coreFields['entity-type'], $coreFields['bundle']);
+            // Top level entries expose their defaultInclude configuration to their children
+            $context['jsonapi_default_include'] = $doc->defaultIncludeFor($coreFields['entity-type'], $coreFields['bundle']);
         }
+
+        // We need to look ahead and discover the final JSONAPI type
+        // because it will guide any sparse fieldset filtering
+        $type = $this->findType($object, $coreFields, $fields);
 
         foreach ($object as $name => $field) {
             if (!$field->access('view', $context['account'])) {
@@ -63,13 +78,10 @@ class ContentEntityNormalizer extends NormalizerBase {
 
             if (isset($fields[$name])) {
                 $outputName = $fields[$name]["as"];
-                if (true /* !$doc || $doc->shouldIncludeField($config['type'], $outputName)*/) {
+                if ($doc->shouldIncludeField($type, $outputName)) {
                     $innerContext = $context;
-                    if ($defaultInclude) {
-                        $innerContext['jsonapi_default_include'] = $defaultInclude;
-                    }
                     $innerContext['jsonapi_path'][] = $outputName;
-                    $child = $this->serializer->normalize($field, $format, $innerContext);
+                    $child = $this->serializer->normalize($field, 'jsonapi', $innerContext);
                     if ($child instanceof JsonApiEntityReference) {
                         $relationships[$outputName] = $child->normalize();
                     } else {
