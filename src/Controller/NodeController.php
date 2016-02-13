@@ -8,7 +8,6 @@ namespace Drupal\jsonapi\Controller;
 
 use Drupal\jsonapi\Response;
 use Drupal\jsonapi\DocumentContext;
-use Drupal\jsonapi\HardCodedConfig;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -24,10 +23,6 @@ use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 class NodeController implements ContainerAwareInterface {
 
     use ContainerAwareTrait;
-
-    public function __construct() {
-        $this->config = new HardCodedConfig();
-    }
 
     public function handle(RouteMatchInterface $route_match, Request $request) {
 
@@ -56,7 +51,7 @@ class NodeController implements ContainerAwareInterface {
             # http://jsonapi.org/format/#error-objects
             return new Response(["errors" => [["title" => "Access denied to node", "detail" => "Access denied to node with nid=" . $nid . "."]]], 403);
         }
-        return new Response(new DocumentContext($node, $this->optionsFor($request), $this->config->configFor($node)), 200);
+        return new Response(new DocumentContext($node, $this->optionsFor($request)), 200);
     }
 
     protected function optionsFor($request) {

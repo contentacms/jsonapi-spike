@@ -9,19 +9,61 @@ namespace Drupal\jsonapi;
 
 class HardCodedConfig {
     private static $_config = [
-        'node' => [
-            'article' => [
+        // Versioned API mount point.
+        '/jsonapi/v2' => [
+            // An endpoint definition. Will expand to:
+            //   /jsonapi/v1/nodes
+            //   /jsonapi/v1/nodes/123
+            // And assuming a "topic" entity reference is exposed below, also:
+            //   /jsonapi/v1/nodes/123/relationships/topic
+            //   /jsonapi/v1/nodes/123/topic
+            '/nodes' => [
+                // This endpoint will deal with Node entities
+                'entityType' => 'node',
+
+                // This is how we'll map the Node's content into
+                // JSONAPI. This declares the maximal set of fields
+                // exposed, clients can use sparse fieldsets to pare
+                // it down smaller when they're uninterested in some
+                // fields.
                 'fields' => [
                     'title' => 'title',
-                    'field_byline' => 'byline',
-                    'field_topic' => 'topic',
+                    // In this case we're choosing to make the Drupal
+                    // Content Type deterine the JSONAPI type.
                     'content-type' => 'type'
+                    // In general, you can discover what fields are
+                    // available for use in the left hand side here by
+                    // hitting the endpoint with ?debug=1 and seeing
+                    // the unused fields list.
                 ],
-                'defaultInclude' => ['topic']
-            ]
-        ],
-        'taxonomy_term' => [
-            'topics' => [
+
+                // fields and defaultIncludes can be extended on a
+                // per-bundle basis.
+                'extensions' => [
+                    // In this case, articles have some fields that
+                    // other nodes don't and we want to declare how
+                    // they should appear.
+                    'article' => [
+                        'fields' => [
+                            'field_byline' => 'byline',
+                            // field_topic is an entity reference,
+                            // which we're exposing as "topic"
+                            'field_topic' => 'topic'
+                        ],
+                        // Embed related topic entities by default
+                        // (JSONAPI calls this is the "included"
+                        // section of a document). This is overridable
+                        // by query param. These entities will be
+                        // rendered based on their own endpoint config
+                        // in this same api version.
+                        'defaultInclude' => ['topic']
+                    ]
+                ]
+            ],
+            '/topics' => [
+                'entityType' => 'taxonomy_term',
+                // This time we're restricting to a single bundle.
+                'bundles' => ['topics'],
                 'fields' => [
                     'name' => 'name',
                     'vocabulary' => 'type'
@@ -31,7 +73,25 @@ class HardCodedConfig {
     ];
 
     public function __construct() {
-        $this->config = $this->normalizeConfig(self::$_config);
+        $this->config = $this->prepareConfig(self::$_config);
+    }
+
+    public function endpoints() {
+        $output = [];
+        foreach($this->config as $scope => $config) {
+            foreach($config['endpoints'] as $path => $endpointConfig) {
+                $output[] = [ "scope" => $scope, "path" => $path ];
+            }
+        }
+        return $output;
+    }
+
+    public function forEndpoint($scope, $endpoint) {
+        $scopeConfig = $this->config[$scope];
+        return [
+            'scope' => $scopeConfig,
+            'entryPoint' => &$scopeConfig['endpoints'][$endpoint],
+        ];
     }
 
     public function configFor($object) {
@@ -46,27 +106,59 @@ class HardCodedConfig {
         return $bundleConfig;
     }
 
-    private function normalizeConfig($config) {
-        $normalized = [];
-        foreach($config as $entityType => $entityTypeConfig) {
-            $normalized[$entityType] = [];
-            foreach($entityTypeConfig as $bundleId => $bundleConfig) {
-                $normalized[$entityType][$bundleId] = $this->normalizeBundleConfig($bundleId, $bundleConfig);
-
-            }
+    private function prepareConfig($config) {
+        $prepared = [];
+        foreach($config as $apiScope => $endpointConfigs) {
+            $prepared[$apiScope] = $this->prepareApiScope($endpointConfigs);
+            $prepared[$apiScope]["name"] = $apiScope;
         }
-        return $normalized;
+        return $prepared;
     }
 
-    private function normalizeBundleConfig($bundleId, $bundleConfig) {
-        $output = [];
+    private function prepareApiScope($endpointConfigs) {
+        $endpoints = [];
+        $entities = [];
+        $bundles = [];
 
-        if (isset($bundleConfig['defaultInclude'])) {
-            $output['defaultInclude'] = array_map(function($path){
+        foreach($endpointConfigs as $path => $endpointConfig) {
+            $nec = $this->prepareEndpointConfig($endpointConfig);
+            $entityType = $nec['entityType'];
+            $endpoints[$path] = $nec;
+            if ($endpointConfig['bundles']) {
+                // the endpoint applies to only certain bundles,
+                if (!isset($bundles[$entityType])) {
+                    $bundles[$entityType] = [];
+                }
+                foreach($endpointConfig['bundles'] as $bundleId) {
+                    $bundles[$entityType][$bundleId] = $path;
+                }
+            } else {
+                // the endpoint applies to an entire entity type,
+                $entities[$entityType] = $path;
+            }
+        }
+        return [
+            "endpoints" => $endpoints,
+            "entities" => $entities,
+            "bundles" => $bundles
+        ];
+    }
+
+    private function prepareDefaultInclude($entry) {
+        if (isset($entry['defaultInclude'])) {
+            return array_map(function($path){
                 return explode('.', $path);
-            }, $bundleConfig['defaultInclude']);
+            }, $entry['defaultInclude']);
         } else {
-            $output['defaultInclude'] = [];
+            return [];
+        }
+    }
+
+    private function prepareFields($endpoint, $initial) {
+        if ($initial) {
+            $output = $initial;
+        } else {
+            $output = [];
         }
 
         // These are the two mandatory fields we must expose to
@@ -75,28 +167,41 @@ class HardCodedConfig {
         $sawType = false;
         $sawId = false;
 
-        if (isset($bundleConfig['fields'])) {
-            foreach ($bundleConfig['fields'] as $key => $value) {
-                if ($value == 'id') {
-                    $sawId = true;
-                }
-                if ($value == 'type') {
-                    $sawType = true;
-                }
-                $output['fields'][$key] = [
-                    "as" => $value
-                ];
+        if (isset($endpoint['fields'])) {
+            foreach ($endpoint['fields'] as $key => $value) {
+                if ($value == 'id') { $sawId = true; }
+                if ($value == 'type') { $sawType = true; }
+                $output[$key] = [ "as" => $value ];
             }
         }
 
         if (!$sawType) {
-            $output['fields']['entity-type'] = [ 'as' => 'type' ];
+            $output['entity-type'] = [ 'as' => 'type' ];
         }
-
         if (!$sawId) {
-            $output['fields']['id'] = [ 'as' => 'id' ];
+            $output['id'] = [ 'as' => 'id' ];
         }
 
+        return $output;
+    }
+
+    private function prepareEndpointConfig($endpoint) {
+        $output = [
+            "entityType" => $endpoint['entityType'],
+            "bundles" => $endpoint['bundles'],
+            "defaultInclude" => $this->prepareDefaultInclude($endpoint),
+            "fields" => $this->prepareFields($endpoint, null)
+        ];
+
+        if ($endpoint['extensions']) {
+            $output['extensions'] = [];
+            foreach($endpoint['extensions'] as $bundle => $extension) {
+                $output['extensions'][$bundle] = [
+                    "defaultInclude" => array_merge($output['defaultInclude'], $this->prepareDefaultInclude($extension)),
+                    "fields" => $this->prepareFields($extension, $output['fields'])
+                ];
+            }
+        }
 
         return $output;
     }

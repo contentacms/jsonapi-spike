@@ -8,16 +8,12 @@
 namespace Drupal\jsonapi\Normalizer;
 
 use Drupal\serialization\Normalizer\NormalizerBase;
-use Drupal\jsonapi\HardCodedConfig;
 use Drupal\jsonapi\JsonApiEntityReference;
 
 /**
  * Normalizes/denormalizes Drupal content entities into an array structure.
  */
 class ContentEntityNormalizer extends NormalizerBase {
-    public function __construct() {
-        $this->config = new HardCodedConfig();
-    }
 
     /**
      * The interface or class that this Normalizer supports.
@@ -43,25 +39,35 @@ class ContentEntityNormalizer extends NormalizerBase {
             'entity-type' => $object->getEntityTypeId(),
             'id' => $object->id(),
             'bundle-label' => $bundleLabel,
+            'bundle' => $object->bundle(),
             $bundleLabel => $object->bundle()
         ];
     }
 
     protected function normalizeFields($object, $context, $doc) {
-        $config = $this->config->configFor($object);
         $attributes = [];
         $relationships = [];
         $unused = [];
+        $coreFields = $this->coreFields($object);
+
+        $fields = $doc->fieldsFor($coreFields['entity-type'], $coreFields['bundle']);
+        $defaultInclude = null;
+        if (count($context['jsonapi_path']) == 0) {
+            $defaultInclude = $doc->defaultIncludeFor($coreFields['entity-type'], $coreFields['bundle']);
+        }
 
         foreach ($object as $name => $field) {
             if (!$field->access('view', $context['account'])) {
                 continue;
             }
 
-            if (isset($config['fields'][$name])) {
-                $outputName = $config['fields'][$name]["as"];
-                if (!$doc || $doc->shouldIncludeField($config['type'], $outputName)) {
+            if (isset($fields[$name])) {
+                $outputName = $fields[$name]["as"];
+                if (true /* !$doc || $doc->shouldIncludeField($config['type'], $outputName)*/) {
                     $innerContext = $context;
+                    if ($defaultInclude) {
+                        $innerContext['jsonapi_default_include'] = $defaultInclude;
+                    }
                     $innerContext['jsonapi_path'][] = $outputName;
                     $child = $this->serializer->normalize($field, $format, $innerContext);
                     if ($child instanceof JsonApiEntityReference) {
@@ -75,9 +81,9 @@ class ContentEntityNormalizer extends NormalizerBase {
             }
         }
 
-        foreach($this->coreFields($object) as $name => $value) {
-            if (isset($config['fields'][$name])) {
-                $outputName = $config['fields'][$name]["as"];
+        foreach($coreFields as $name => $value) {
+            if (isset($fields[$name])) {
+                $outputName = $fields[$name]["as"];
                 $attributes[$outputName] = $value;
             } else {
                 $unused[] = $name;
@@ -89,7 +95,7 @@ class ContentEntityNormalizer extends NormalizerBase {
             $record['relationships'] = &$relationships;
         }
 
-        if ($doc && $doc->debugEnabled()) {
+        if ($doc->debugEnabled()) {
             $this->addMeta($record, 'unused-fields', $unused);
         }
 
@@ -105,11 +111,7 @@ class ContentEntityNormalizer extends NormalizerBase {
             'jsonapi_path' => [] # Defaults to top level path, unless we've inherited one already.
         );
 
-        if (isset($context['jsonapi_document'])) {
-            $doc = $context['jsonapi_document'];
-        } else {
-            $doc = null;
-        }
+        $doc = $context['jsonapi_document'];
 
         $record = $this->normalizeFields($object, $context, $doc);
         $record['id'] = $record['attributes']['id'];
@@ -120,11 +122,8 @@ class ContentEntityNormalizer extends NormalizerBase {
         if (count($context['jsonapi_path']) == 0) {
             return $record;
         } else {
-            if (isset($context['jsonapi_document'])) {
-                $doc = $context['jsonapi_document'];
-                if ($doc->shouldInclude($context['jsonapi_path'])) {
-                    $doc->addIncluded($record);
-                }
+            if ($doc->shouldInclude($context['jsonapi_path'], $context['jsonapi_default_include'])) {
+                $doc->addIncluded($record);
             }
             return new JsonApiEntityReference($record);
         }
