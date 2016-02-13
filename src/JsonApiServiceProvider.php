@@ -25,4 +25,3 @@ class JsonapiServiceProvider implements ServiceModifierInterface {
   }
 
 }
-
