@@ -27,6 +27,9 @@ class EndpointController implements ContainerAwareInterface {
     }
 
     public function handleCollection(Request $request) {
+        //$query_service = $this->container->get('entity.query');
+        //$query = $query_service->get('your_entity_type');
+
         return $this->respondWith(new Response(["errors" => [["title" => "Not implemented", "detail" => "Collection endpoint not implemented."]]], 500));
     }
 
