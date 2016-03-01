@@ -31,11 +31,11 @@ class FieldItemListNormalizer extends NormalizerBase {
     }
     $attributes = array();
     foreach ($object as $index => $fieldItem) {
-        $path = $context['jsonapi_path'];
-        $path[] = $index;
-        $innerContext = $context;
-        $innerContext['jsonapi_path'] = $path;
-        $attributes[] = $this->serializer->normalize($fieldItem, $format, $context);
+      $path = $context['jsonapi_path'];
+      $path[] = $index;
+      $innerContext = $context;
+      $innerContext['jsonapi_path'] = $path;
+      $attributes[] = $this->serializer->normalize($fieldItem, $format, $context);
     }
     return $attributes;
   }
