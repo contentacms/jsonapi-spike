@@ -6,8 +6,10 @@
  */
 
 namespace Drupal\jsonapi\Normalizer;
+use Drupal\jsonapi\ResourceObject;
 use Drupal\serialization\Normalizer\NormalizerBase;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
 class DocumentContextNormalizer extends NormalizerBase implements DenormalizerInterface {
 
@@ -37,10 +39,33 @@ class DocumentContextNormalizer extends NormalizerBase implements DenormalizerIn
     return $attributes;
   }
 
-  public function denormalize($data, $class, $format = NULL, array $context = []) {
-    $doc = new $class($data, $context['config'], $context['options']);
-    $context['jsonapi_document'] = $doc;
-    return $doc;
+  public function denormalize($payload, $class, $format = NULL, array $context = []) {
+    if (!isset($payload['data'])) {
+      throw new UnexpectedValueException("Incoming JSONAPI document had no 'data' member");
+    }
+
+    $data = $payload['data'];
+
+    // PHP considers both JSON list and JSON object as arrays. :-(
+    if (!is_array($data)) {
+      throw new UnexpectedValueException("'data' member was not a list or object");
+    }
+
+    if (isset($data['type'])) {
+      $document = new $class(new ResourceObject($data), $context['config'], $context['options']);
+    } else {
+      // Maybe a list, but we need to check.
+      foreach($data as $item) {
+        if (!isset($item['type'])) {
+          throw new UnexpectedValueException("data must contain either a single object with a type, or a list of objects with types");
+        }
+      }
+      $objects = array_map($data, function($elt) {
+        return new ResourceObject($elt);
+      });
+      $document = new $class($objects, $context['config'], $context['options']);
+    }
+    return $document;
   }
 
 }
