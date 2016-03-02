@@ -30,7 +30,7 @@ class HardCodedConfig {
           'title' => 'title',
           'status' => 'published',
           // In this case we're choosing to make the Drupal
-          // Content Type deterine the JSONAPI type.
+          // Content Type determine the JSONAPI type.
           'content-type' => 'type'
           // In general, you can discover what fields are
           // available for use in the left hand side here by
