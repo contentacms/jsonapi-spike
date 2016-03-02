@@ -42,7 +42,10 @@ class EndpointController implements ContainerInjectionInterface {
       ];
       $content = $request->getContent();
       if ($content) {
-        $args['requestDocument'] = $this->serializer->deserialize($content, 'Drupal\jsonapi\DocumentContext', 'jsonapi', []);
+        $args['requestDocument'] = $this->serializer->deserialize($content, 'Drupal\jsonapi\DocumentContext', 'jsonapi', [
+          "options" => $args['options'],
+          "config" => $args['config']
+        ]);
       }
       $response = $this->{$handler}($args);
     } else {
@@ -84,7 +87,7 @@ class EndpointController implements ContainerInjectionInterface {
     return new Response(["errors" => [[
       "title" => "Implementation in progress",
       "description" => $req['requestDocument']
-    ]]], 500);
+    ]]], 201);
   }
 
   protected function optionsFor($request) {

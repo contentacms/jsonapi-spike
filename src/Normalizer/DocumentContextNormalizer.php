@@ -38,7 +38,9 @@ class DocumentContextNormalizer extends NormalizerBase implements DenormalizerIn
   }
 
   public function denormalize($data, $class, $format = NULL, array $context = []) {
-    return $data;
+    $doc = new $class($data, $context['config'], $context['options']);
+    $context['jsonapi_document'] = $doc;
+    return $doc;
   }
 
 }
