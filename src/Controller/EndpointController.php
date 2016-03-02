@@ -58,6 +58,9 @@ class EndpointController implements ContainerInjectionInterface {
           "id" => $id,
           "related" => $related,
         ];
+        $args['entityType'] = $args['config']['entryPoint']['entityType'];
+        $args['storage'] = $this->entityManager->getStorage($args['entityType']);
+
         $content = $request->getContent();
         if ($content) {
           $args['requestDocument'] = $this->serializer->deserialize($content, 'Drupal\jsonapi\DocumentContext', 'jsonapi', [
@@ -79,25 +82,23 @@ class EndpointController implements ContainerInjectionInterface {
   }
 
   protected function handleIndividualGET($req) {
-    $entityType = $req['config']['entryPoint']['entityType'];
-    $entity = $this->entityManager->getStorage($entityType)->load($req['id']);
+    $entity = $req['storage']->load($req['id']);
 
     if (!$entity) {
-      return $this->errorResponse(404, $entityType . " not found", "where id=" . $req['id']);
+      return $this->errorResponse(404, $req['entityType'] . " not found", "where id=" . $req['id']);
     }
 
 
     if (!$entity->access('view')) {
-      return $this->errorResponse(403, "Access denied to " . $entityType, "where id=" . $req['id']);
+      return $this->errorResponse(403, "Access denied to " . $req['entityType'], "where id=" . $req['id']);
     }
     return new Response(new DocumentContext($entity, $req['config'], $req['options']), 200);
   }
 
   protected function handleCollectionGET($req) {
-    $entityType = $req['config']['entryPoint']['entityType'];
-    $query = $this->entityQuery->get($entityType);
+    $query = $this->entityQuery->get($req['entityType']);
     $ids = $query->execute();
-    $entities = $this->entityManager->getStorage($entityType)->loadMultiple($id);
+    $entities = $req['storage']->loadMultiple($id);
     $output = array_values(array_filter($entities, function($entity) { return $entity->access('view'); }));
     return new Response(new DocumentContext($output, $req['config'], $req['options'], 200));
   }
