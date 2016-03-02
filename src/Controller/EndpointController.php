@@ -10,7 +10,6 @@ use Drupal\jsonapi\Response;
 use Drupal\jsonapi\DocumentContext;
 use Drupal\jsonapi\HardCodedConfig;
 use Drupal\jsonapi\Encoder\JsonApiEncoder;
-use Drupal\jsonapi\ResourceObject;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -105,7 +104,7 @@ class EndpointController implements ContainerInjectionInterface {
 
   protected function handleCollectionPOST($req) {
     $doc = $req['requestDocument'];
-    if (!$doc || !$doc->data instanceof ResourceObject) {
+    if (!$doc || is_array($doc->data)) {
       return $this->errorResponse(400, "Bad Request", "POST to a collection endpoint must contain a single resource");
     }
 

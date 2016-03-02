@@ -9,8 +9,8 @@ class ResourceObject {
   public function __construct($data) {
     $this->type = $data['type'];
     $this->id = $data['id'];
-    $this->meta = $data['meta'] || [];
-    $this->attributes = $data['attributes'] || [];
-    $this->relationships = $data['relationships'] || [];
+    $this->meta = isset($data['meta']) ? $data['meta'] : [];
+    $this->attributes = isset($data['attributes']) ? $data['attributes'] : [];
+    $this->relationships = isset($data['relationships']) ? $data['relationships'] : [];
   }
 }

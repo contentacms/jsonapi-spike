@@ -6,7 +6,7 @@
  */
 
 namespace Drupal\jsonapi\Normalizer;
-use Drupal\jsonapi\ResourceObject;
+
 use Drupal\serialization\Normalizer\NormalizerBase;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
@@ -51,21 +51,26 @@ class DocumentContextNormalizer extends NormalizerBase implements DenormalizerIn
       throw new UnexpectedValueException("'data' member was not a list or object");
     }
 
+    $document = new $class(null, $context['config'], $context['options']);
+    $context['jsonapi_document'] = $document;
+
     if (isset($data['type'])) {
-      $document = new $class(new ResourceObject($data), $context['config'], $context['options']);
+      $document->data = $this->denormalizeResource($data, $context);
     } else {
-      // Maybe a list, but we need to check.
+      $resources = [];
       foreach($data as $item) {
         if (!isset($item['type'])) {
           throw new UnexpectedValueException("data must contain either a single object with a type, or a list of objects with types");
         }
+        array_push($resources, $this->denormalizeResource($item, $context));
       }
-      $objects = array_map($data, function($elt) {
-        return new ResourceObject($elt);
-      });
-      $document = new $class($objects, $context['config'], $context['options']);
+      $document->data = $resources;
     }
     return $document;
+  }
+
+  protected function denormalizeResource($payload, $context) {
+    return $this->serializer->denormalize($payload, 'Drupal\Core\Entity\Entity', 'jsonapi', $context);
   }
 
 }

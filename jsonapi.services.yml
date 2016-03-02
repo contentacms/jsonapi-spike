@@ -23,6 +23,10 @@ services:
       class: Drupal\jsonapi\Normalizer\DocumentContextNormalizer
       tags:
         - { name: normalizer, priority: 0 }
+  jsonapi.normalizer.resource_object:
+    class: Drupal\jsonapi\Normalizer\ResourceObjectNormalizer
+    tags:
+      - { name: normalizer, priority: 10 }
 
 
 

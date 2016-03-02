@@ -7,20 +7,22 @@
 
 namespace Drupal\jsonapi\Normalizer;
 
+use Drupal\jsonapi\ResourceObject;
 use Drupal\serialization\Normalizer\NormalizerBase;
 use Drupal\jsonapi\JsonApiEntityReference;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 /**
  * Normalizes/denormalizes Drupal content entities into an array structure.
  */
-class ContentEntityNormalizer extends NormalizerBase {
+class ContentEntityNormalizer extends NormalizerBase implements DenormalizerInterface {
 
   /**
    * The interface or class that this Normalizer supports.
    *
    * @var array
    */
-  protected $supportedInterfaceOrClass = ['Drupal\Core\Entity\ContentEntityInterface'];
+  protected $supportedInterfaceOrClass = ['Drupal\Core\Entity\EntityInterface'];
   protected $format = array('jsonapi');
 
   protected function addMeta(&$record, $key, $value) {
@@ -140,6 +142,10 @@ class ContentEntityNormalizer extends NormalizerBase {
       return new JsonApiEntityReference($record);
     }
 
+  }
+
+  public function denormalize($payload, $class, $format = NULL, array $context = []) {
+    return new ResourceObject($payload);
   }
 
 }
