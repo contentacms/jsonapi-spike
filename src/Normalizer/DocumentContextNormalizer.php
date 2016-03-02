@@ -7,8 +7,9 @@
 
 namespace Drupal\jsonapi\Normalizer;
 use Drupal\serialization\Normalizer\NormalizerBase;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
-class DocumentContextNormalizer extends NormalizerBase {
+class DocumentContextNormalizer extends NormalizerBase implements DenormalizerInterface {
 
   /**
    * The interface or class that this Normalizer supports.
@@ -34,6 +35,10 @@ class DocumentContextNormalizer extends NormalizerBase {
       $attributes["included"] = $included;
     }
     return $attributes;
+  }
+
+  public function denormalize($data, $class, $format = NULL, array $context = []) {
+    return $data;
   }
 
 }

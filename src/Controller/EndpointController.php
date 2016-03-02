@@ -9,11 +9,8 @@ namespace Drupal\jsonapi\Controller;
 use Drupal\jsonapi\Response;
 use Drupal\jsonapi\DocumentContext;
 use Drupal\jsonapi\HardCodedConfig;
-use Drupal\Component\Serialization\Json;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Drupal\jsonapi\Encoder\JsonApiEncoder;
 use Symfony\Component\HttpFoundation\Request;
-use Drupal\node\Entity\Node;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 
@@ -37,12 +34,19 @@ class EndpointController implements ContainerInjectionInterface {
   public function handle(Request $request, $_route, $scope, $endpoint, $id=null, $related=null) {
     $handler = 'handle' . ucwords(end(explode(".", $_route))) . $request->getMethod();
     if (is_callable([$this, $handler])) {
-      $config = $this->config->forEndpoint($scope, $endpoint);
-      $options = $this->optionsFor($request);
-      $response = $this->{$handler}($config, $options, $id, $related);
+      $args = [
+        "config" => $this->config->forEndpoint($scope, $endpoint),
+        "options" => $this->optionsFor($request),
+        "id" => $id,
+        "related" => $related,
+      ];
+      $content = $request->getContent();
+      if ($content) {
+        $args['requestDocument'] = $this->serializer->deserialize($content, 'Drupal\jsonapi\DocumentContext', 'jsonapi', []);
+      }
+      $response = $this->{$handler}($args);
     } else {
-      $response = new Response(["errors" => [["title" => "Not implemented", "detail" => $handler . " endpoint not implemented."]]], 500);
-
+      $response = this.errorResponse(500, "Not implemented", $handler . " endpoint not implemented.");
     }
     if ($response instanceof Response && $data = $response->getResponseData()) {
       $output = $this->serializer->serialize($data, "jsonapi");
@@ -52,34 +56,35 @@ class EndpointController implements ContainerInjectionInterface {
     return $response;
   }
 
-  protected function handleIndividualGET($config, $options, $id) {
-    $entityType = $config['entryPoint']['entityType'];
-    $entity = $this->entityManager->getStorage($entityType)->load($id);
+  protected function handleIndividualGET($req) {
+    $entityType = $req['config']['entryPoint']['entityType'];
+    $entity = $this->entityManager->getStorage($entityType)->load($req['id']);
 
     if (!$entity) {
-      # http://jsonapi.org/format/#error-objects
-      return new Response(["errors" => [["title" => $entityType . " not found", "detail" => "where id=" . $id]]], 404);
+      return this.errorResponse(404, $entityType . " not found", "where id=" . $req['id']);
     }
 
 
     if (!$entity->access('view')) {
-      # http://jsonapi.org/format/#error-objects
-      return new Response(["errors" => [["title" => "Access denied to " . $entityType, "detail" => "where id=" . $id . "."]]], 403);
+      return this.errorResponse(403, "Access denied to " . $entityType, "where id=" . $req['id']);
     }
-    return new Response(new DocumentContext($entity, $config, $options), 200);
+    return new Response(new DocumentContext($entity, $req['config'], $req['options']), 200);
   }
 
-  protected function handleCollectionGET($config, $options) {
-    $entityType = $config['entryPoint']['entityType'];
+  protected function handleCollectionGET($req) {
+    $entityType = $req['config']['entryPoint']['entityType'];
     $query = $this->entityQuery->get($entityType);
     $ids = $query->execute();
     $entities = $this->entityManager->getStorage($entityType)->loadMultiple($id);
     $output = array_values(array_filter($entities, function($entity) { return $entity->access('view'); }));
-    return new Response(new DocumentContext($output, $config, $options, 200));
+    return new Response(new DocumentContext($output, $req['config'], $req['options'], 200));
   }
 
-  protected function handleCollectionPOST($config, $options) {
-    return new Response(["errors" => [["title" => "Woah"]]], 500);
+  protected function handleCollectionPOST($req) {
+    return new Response(["errors" => [[
+      "title" => "Implementation in progress",
+      "description" => $req['requestDocument']
+    ]]], 500);
   }
 
   protected function optionsFor($request) {
@@ -102,6 +107,14 @@ class EndpointController implements ContainerInjectionInterface {
       }
     }
     return $output;
+  }
+
+  protected function errorResponse($statusCode, $title, $detail) {
+    # http://jsonapi.org/format/#error-objects
+    return new Response(["errors" => [[
+      "title" => $title,
+      "detail" => $detail
+    ]]], $statusCode);
   }
 
 }
