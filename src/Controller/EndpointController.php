@@ -14,16 +14,24 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\Entity\Node;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 
+class EndpointController implements ContainerInjectionInterface {
 
-class EndpointController implements ContainerAwareInterface {
-
-  use ContainerAwareTrait;
-
-  public function __construct() {
+  public function __construct($serializer, $entityQuery, $entityManager) {
     $this->config = new HardCodedConfig();
+    $this->serializer = $serializer;
+    $this->entityQuery = $entityQuery;
+    $this->entityManager = $entityManager;
+  }
+
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('serializer'),
+      $container->get('entity.query'),
+      $container->get('entity.manager')
+    );
   }
 
   public function handle(Request $request, $_route, $scope, $endpoint, $id=null, $related=null) {
@@ -37,7 +45,7 @@ class EndpointController implements ContainerAwareInterface {
 
     }
     if ($response instanceof Response && $data = $response->getResponseData()) {
-      $output = $this->container->get('serializer')->serialize($data, "jsonapi");
+      $output = $this->serializer->serialize($data, "jsonapi");
       $response->setContent($output);
       $response->headers->set('Content-Type', 'application/vnd.api+json');
     }
@@ -46,7 +54,7 @@ class EndpointController implements ContainerAwareInterface {
 
   protected function handleIndividualGET($config, $options, $id) {
     $entityType = $config['entryPoint']['entityType'];
-    $entity = $this->container->get('entity.manager')->getStorage($entityType)->load($id);
+    $entity = $this->entityManager->getStorage($entityType)->load($id);
 
     if (!$entity) {
       # http://jsonapi.org/format/#error-objects
@@ -63,7 +71,7 @@ class EndpointController implements ContainerAwareInterface {
 
   protected function handleCollectionGET($config, $options) {
     $entityType = $config['entryPoint']['entityType'];
-    $query = $this->container->get('entity.query')->get($entityType);
+    $query = $this->entityQuery->get($entityType);
     $ids = $query->execute();
     $output = array_values(array_filter(entity_load_multiple($entityType, $ids), function($entity) { return $entity->access('view'); }));
     return new Response(new DocumentContext($output, $config, $options, 200));
