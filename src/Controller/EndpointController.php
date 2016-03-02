@@ -26,27 +26,25 @@ class EndpointController implements ContainerAwareInterface {
     $this->config = new HardCodedConfig();
   }
 
-  public function handleCollection(Request $request) {
-    //$query_service = $this->container->get('entity.query');
-    //$query = $query_service->get('your_entity_type');
+  public function handle(Request $request, $_route, $scope, $endpoint, $id=null, $related=null) {
+    $handler = 'handle' . ucwords(end(explode(".", $_route)));
+    if (is_callable([$this, $handler])) {
+      $config = $this->config->forEndpoint($scope, $endpoint);
+      $response = $this->{$handler}($request, $config, $id, $related);
+    } else {
+      $response = new Response(["errors" => [["title" => "Not implemented", "detail" => $handler . " endpoint not implemented."]]], 500);
 
-    return $this->respondWith(new Response(["errors" => [["title" => "Not implemented", "detail" => "Collection endpoint not implemented."]]], 500));
+    }
+    if ($response instanceof Response && $data = $response->getResponseData()) {
+      $serializer = $this->container->get('serializer');
+      $output = $serializer->serialize($data, "jsonapi");
+      $response->setContent($output);
+      $response->headers->set('Content-Type', 'application/vnd.api+json');
+    }
+    return $response;
   }
 
-  public function handleIndividual(Request $request, $scope, $endpoint, $id) {
-    return $this->respondWith($this->makeResponse($request, $scope, $endpoint, $id));
-  }
-
-  public function handleRelated(Request $request, $id, $related) {
-    return $this->respondWith(new Response(["errors" => [["title" => "Not implemented", "detail" => "Related endpoint not implemented."]]], 500));
-  }
-
-  public function handleRelationship(Request $request, $id, $related) {
-    return $this->respondWith(new Response(["errors" => [["title" => "Not implemented", "detail" => "Relationship endpoint not implemented."]]], 500));
-  }
-
-  protected function makeResponse($request, $scope, $endpoint, $id) {
-    $config = $this->config->forEndpoint($scope, $endpoint);
+  protected function handleIndividual($request, $config, $id, $related) {
     $entityType = $config['entryPoint']['entityType'];
     $entity_manager = \Drupal::entityManager();
     $entity = $entity_manager->getStorage($entityType)->load($id);
@@ -64,15 +62,11 @@ class EndpointController implements ContainerAwareInterface {
     return new Response(new DocumentContext($entity, $config, $this->optionsFor($request)), 200);
   }
 
-  protected function respondWith($response) {
-    if ($response instanceof Response && $data = $response->getResponseData()) {
-      $serializer = $this->container->get('serializer');
-      $output = $serializer->serialize($data, "jsonapi");
-      $response->setContent($output);
-      $response->headers->set('Content-Type', 'application/vnd.api+json');
-    }
-    return $response;
+  protected function handleCollection(Request $request) {
+    $query_service = $this->container->get('entity.query');
+    $query = $query_service->get('your_entity_type');
   }
+
 
   protected function optionsFor($request) {
     $output = [];

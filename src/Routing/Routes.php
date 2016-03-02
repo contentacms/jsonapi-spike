@@ -33,7 +33,7 @@ class Routes {
       $routes[$routeKey . '.' . 'collection'] = new Route(
         $path,
         [
-          '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handleCollection',
+          '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handle',
           'scope' => $endpoint['scope'],
           'endpoint' => $endpoint['path']
         ],
@@ -44,7 +44,7 @@ class Routes {
       $routes[$routeKey . '.' . 'individual'] = new Route(
         $path . '/{id}',
         [
-          '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handleIndividual',
+          '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handle',
           'scope' => $endpoint['scope'],
           'endpoint' => $endpoint['path']
         ],
@@ -55,7 +55,7 @@ class Routes {
       $routes[$routeKey . '.' . 'related'] = new Route(
         $path . '/{id}/{related}',
         [
-          '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handleRelated',
+          '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handle',
           'scope' => $endpoint['scope'],
           'endpoint' => $endpoint['path']
         ],
@@ -67,7 +67,7 @@ class Routes {
       $routes[$routeKey . '.' . 'relationship'] = new Route(
         $path . '/{id}/relationships/{related}',
         [
-          '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handleRelationship',
+          '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handle',
           'scope' => $endpoint['scope'],
           'endpoint' => $endpoint['path']
         ],
