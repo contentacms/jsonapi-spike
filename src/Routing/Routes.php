@@ -28,50 +28,55 @@ class Routes {
       $path = $endpoint['scope'] . $endpoint['path'];
       $routeKey = join('.', ['jsonapi', 'dynamic', $endpoint['scope'], $endpoint['path']]);
       $requirements = ['_permission'  => 'access content' ];
+      $defaults = [
+        '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handle',
+        'scope' => $endpoint['scope'],
+        'endpoint' => $endpoint['path']
+      ];
 
       // Collection endpoint, like /api/v1/photos
       $routes[$routeKey . '.' . 'collection'] = new Route(
         $path,
-        [
-          '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handle',
-          'scope' => $endpoint['scope'],
-          'endpoint' => $endpoint['path']
-        ],
-        $requirements
+        $defaults,
+        $requirements,
+        [],     # options
+        '',     # host
+        [],     # schemes
+        ["GET", "POST"] # methods
       );
 
       // Individual endpoint, like /api/v1/photos/123
       $routes[$routeKey . '.' . 'individual'] = new Route(
         $path . '/{id}',
-        [
-          '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handle',
-          'scope' => $endpoint['scope'],
-          'endpoint' => $endpoint['path']
-        ],
-        $requirements
+        $defaults,
+        $requirements,
+        [],     # options
+        '',     # host
+        [],     # schemes
+        ["GET"] # methods
       );
 
       // Related endpoint, like /api/v1/photos/123/comments
       $routes[$routeKey . '.' . 'related'] = new Route(
         $path . '/{id}/{related}',
-        [
-          '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handle',
-          'scope' => $endpoint['scope'],
-          'endpoint' => $endpoint['path']
-        ],
-        $requirements
+        $defaults,
+        $requirements,
+        [],     # options
+        '',     # host
+        [],     # schemes
+        ["GET"] # methods
       );
 
       // Relationship endpoint, like /api/v1/photos/123/relationships/comments
       // http://jsonapi.org/recommendations/#urls-relationships
       $routes[$routeKey . '.' . 'relationship'] = new Route(
         $path . '/{id}/relationships/{related}',
-        [
-          '_controller' => '\Drupal\jsonapi\Controller\EndpointController::handle',
-          'scope' => $endpoint['scope'],
-          'endpoint' => $endpoint['path']
-        ],
-        $requirements
+        $defaults,
+        $requirements,
+        [],     # options
+        '',     # host
+        [],     # schemes
+        ["GET"] # methods
       );
 
     }

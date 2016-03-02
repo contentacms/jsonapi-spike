@@ -27,7 +27,7 @@ class EndpointController implements ContainerAwareInterface {
   }
 
   public function handle(Request $request, $_route, $scope, $endpoint, $id=null, $related=null) {
-    $handler = 'handle' . ucwords(end(explode(".", $_route)));
+    $handler = 'handle' . ucwords(end(explode(".", $_route))) . $request->getMethod();
     if (is_callable([$this, $handler])) {
       $config = $this->config->forEndpoint($scope, $endpoint);
       $options = $this->optionsFor($request);
@@ -37,18 +37,16 @@ class EndpointController implements ContainerAwareInterface {
 
     }
     if ($response instanceof Response && $data = $response->getResponseData()) {
-      $serializer = $this->container->get('serializer');
-      $output = $serializer->serialize($data, "jsonapi");
+      $output = $this->container->get('serializer')->serialize($data, "jsonapi");
       $response->setContent($output);
       $response->headers->set('Content-Type', 'application/vnd.api+json');
     }
     return $response;
   }
 
-  protected function handleIndividual($config, $options, $id) {
+  protected function handleIndividualGET($config, $options, $id) {
     $entityType = $config['entryPoint']['entityType'];
-    $entity_manager = \Drupal::entityManager();
-    $entity = $entity_manager->getStorage($entityType)->load($id);
+    $entity = $this->container->get('entity.manager')->getStorage($entityType)->load($id);
 
     if (!$entity) {
       # http://jsonapi.org/format/#error-objects
@@ -63,15 +61,17 @@ class EndpointController implements ContainerAwareInterface {
     return new Response(new DocumentContext($entity, $config, $options), 200);
   }
 
-  protected function handleCollection($config, $options) {
+  protected function handleCollectionGET($config, $options) {
     $entityType = $config['entryPoint']['entityType'];
-    $query_service = $this->container->get('entity.query');
-    $query = $query_service->get($entityType);
+    $query = $this->container->get('entity.query')->get($entityType);
     $ids = $query->execute();
     $output = array_values(array_filter(entity_load_multiple($entityType, $ids), function($entity) { return $entity->access('view'); }));
     return new Response(new DocumentContext($output, $config, $options, 200));
   }
 
+  protected function handleCollectionPOST($config, $options) {
+    return new Response(["errors" => [["title" => "Woah"]]], 500);
+  }
 
   protected function optionsFor($request) {
     $output = [];
