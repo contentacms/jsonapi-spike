@@ -30,7 +30,8 @@ class EndpointController implements ContainerAwareInterface {
     $handler = 'handle' . ucwords(end(explode(".", $_route)));
     if (is_callable([$this, $handler])) {
       $config = $this->config->forEndpoint($scope, $endpoint);
-      $response = $this->{$handler}($request, $config, $id, $related);
+      $options = $this->optionsFor($request);
+      $response = $this->{$handler}($config, $options, $id, $related);
     } else {
       $response = new Response(["errors" => [["title" => "Not implemented", "detail" => $handler . " endpoint not implemented."]]], 500);
 
@@ -44,7 +45,7 @@ class EndpointController implements ContainerAwareInterface {
     return $response;
   }
 
-  protected function handleIndividual($request, $config, $id, $related) {
+  protected function handleIndividual($config, $options, $id) {
     $entityType = $config['entryPoint']['entityType'];
     $entity_manager = \Drupal::entityManager();
     $entity = $entity_manager->getStorage($entityType)->load($id);
@@ -59,12 +60,16 @@ class EndpointController implements ContainerAwareInterface {
       # http://jsonapi.org/format/#error-objects
       return new Response(["errors" => [["title" => "Access denied to " . $entityType, "detail" => "where id=" . $id . "."]]], 403);
     }
-    return new Response(new DocumentContext($entity, $config, $this->optionsFor($request)), 200);
+    return new Response(new DocumentContext($entity, $config, $options), 200);
   }
 
-  protected function handleCollection(Request $request) {
+  protected function handleCollection($config, $options) {
+    $entityType = $config['entryPoint']['entityType'];
     $query_service = $this->container->get('entity.query');
-    $query = $query_service->get('your_entity_type');
+    $query = $query_service->get($entityType);
+    $ids = $query->execute();
+    $output = array_values(array_filter(entity_load_multiple($entityType, $ids), function($entity) { return $entity->access('view'); }));
+    return new Response(new DocumentContext($output, $config, $options, 200));
   }
 
 
