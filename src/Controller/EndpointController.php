@@ -73,7 +73,8 @@ class EndpointController implements ContainerInjectionInterface {
     $entityType = $config['entryPoint']['entityType'];
     $query = $this->entityQuery->get($entityType);
     $ids = $query->execute();
-    $output = array_values(array_filter(entity_load_multiple($entityType, $ids), function($entity) { return $entity->access('view'); }));
+    $entities = $this->entityManager->getStorage($entityType)->loadMultiple($id);
+    $output = array_values(array_filter($entities, function($entity) { return $entity->access('view'); }));
     return new Response(new DocumentContext($output, $config, $options, 200));
   }
 
