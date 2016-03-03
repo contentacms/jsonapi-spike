@@ -249,11 +249,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
     }
 
     $inputs[$bundle['key']] = $bundle['id'];
-
-    if ($doc->debugEnabled()) {
-      $doc->addMeta('entity-creation-inputs', $inputs);
-    }
-    return $context['storage']->create($inputs); ;
+    return new ResourceObject($payload, $inputs, $context['storage']);
   }
 
 }

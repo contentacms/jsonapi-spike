@@ -6,15 +6,13 @@ namespace Drupal\jsonapi;
    Represents a resource that has been sent to us by the client.
  */
 class ResourceObject {
-  public function __construct($data) {
-    $this->type = $data['type'];
-    $this->id = $data['id'];
-    $this->meta = isset($data['meta']) ? $data['meta'] : [];
-    $this->attributes = isset($data['attributes']) ? $data['attributes'] : [];
-    $this->relationships = isset($data['relationships']) ? $data['relationships'] : [];
+  public function __construct($json, $drupal, $storage) {
+    $this->json = $json;
+    $this->drupal = $drupal;
+    $this->storage = $storage;
   }
 
-  public function id() {
-    return $this->id;
+  public function toEntity() {
+    return $this->storage->create($this->drupal);
   }
 }

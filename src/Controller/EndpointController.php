@@ -115,6 +115,42 @@ class EndpointController implements ContainerInjectionInterface {
     return new SymfonyResponse(null, 204);
   }
 
+  protected function handleIndividualPATCH($req) {
+    $entity = $req['storage']->load($req['id']);
+
+    if (!$entity || !$this->inAllowedBundles($entity, $req)) {
+      return $this->errorResponse(404, $req['entityType'] . " not found", "where id=" . $req['id']);
+    }
+
+    if (!$entity->access('edit')) {
+      return $this->errorResponse(403, "Access denied to " . $req['entityType'], "where id=" . $req['id']);
+    }
+
+    $doc = $req['requestDocument'];
+    if (!$doc || is_array($doc->data)) {
+      return $this->errorResponse(400, "Bad Request", "PATCH to an individual endpoint must contain a single resource");
+    }
+
+    $drupalInputs = $doc->data->drupal;
+    foreach ($entity as $name => $field) {
+      if (isset($drupalInputs[$name])) {
+        if (!$field->access('edit')) {
+          return $this->errorResponse(403, "Access denied to " . $req['entityType'], "You may not edit " . $name);
+        }
+        $entity->set($name, $drupalInputs[$name]);
+      }
+    }
+    $req['storage']->save($entity);
+    $doc->data = $entity;
+
+    // TODO: the spec says we should return 200 if we changed anything
+    // other than what the user sent, and 204 otherwise. (If the
+    // "changed" field is exposed, that's an example of needing a
+    // 200).
+    return new Response($doc, 200);
+  }
+
+
   protected function handleCollectionGET($req) {
     $query = $this->entityQuery->get($req['entityType']);
     if (isset($req['config']['entryPoint']['bundles'])) {
@@ -133,13 +169,11 @@ class EndpointController implements ContainerInjectionInterface {
       return $this->errorResponse(400, "Bad Request", "POST to a collection endpoint must contain a single resource");
     }
 
-    $resource = $doc->data;
-    if (!is_null($resource->id())) {
+    $entity = $doc->data->toEntity();
+    if (!is_null($entity->id())) {
       // http://jsonapi.org/format/#crud-creating-client-ids
       return $this->errorResponse(403, "Forbidden", "This server does not accept client-generated IDs");
     }
-
-    $entity = $req['requestDocument']->data;
 
     if (!$entity->access('create')) {
       return $this->errorResponse(403, "Forbidden", "You are not authorized to create this entity.");
