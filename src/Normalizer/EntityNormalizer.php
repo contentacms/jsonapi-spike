@@ -195,13 +195,14 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
   }
 
   public function denormalize($payload, $class, $format = NULL, array $context = []) {
+    $doc = $context['jsonapi_document'];
     $config = $context['config']['entryPoint'];
     $entityType = $config['entityType'];
     $entityTypeDefinition = $this->entityManager->getDefinition($config['entityType'], FALSE);
     $bundle = $this->identifyBundle($payload, $config, $entityType, $entityTypeDefinition);
     $inputs = [];
 
-    foreach($context['jsonapi_document']->fieldsFor($entityType, $bundle['id']) as $drupalName => $jsonConfig) {
+    foreach($doc->fieldsFor($entityType, $bundle['id']) as $drupalName => $jsonConfig) {
       $jsonName = $jsonConfig['as'];
       if ($jsonName == $bundle['jsonKey']) {
         // We already grabbed the bundle ID
@@ -224,6 +225,9 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
 
     $inputs[$bundle['key']] = $bundle['id'];
 
+    if ($doc->debugEnabled()) {
+      $doc->addMeta('entity-creation-inputs', $inputs);
+    }
     return $context['storage']->create($inputs); ;
   }
 
