@@ -178,12 +178,18 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
       }
     }
 
+    // If our endpoint is limited to a single bundle, we can quit
+    // early already knowing the answer.
+    if (isset($config['bundles']) && count($config['bundles']) == 1) {
+      return [
+        "id" => $config['bundles'][0],
+        "jsonKey" => $jsonBundleKey,
+        "key" => $bundleKey
+      ];
+    }
+
     if (!isset($jsonBundleKey)) {
-      if (isset($config['bundles']) && count($config['bundles']) == 1) {
-        $bundleId = $config['bundles'][0];
-      } else {
-        throw new UnexpectedValueException("This endpoint encompasses multiple Drupal bundles, but you haven't exposed the bundle name in your API. So we can't tell what type of entity you're trying to create.");
-      }
+      throw new UnexpectedValueException("This endpoint encompasses multiple Drupal bundles, but you haven't exposed the bundle name in your API. So we can't tell what type of entity you're trying to create.");
     }
 
     if ($jsonBundleKey == 'type' || $jsonBundleKey == 'id') {
