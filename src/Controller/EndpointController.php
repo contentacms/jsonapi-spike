@@ -103,8 +103,8 @@ class EndpointController implements ContainerInjectionInterface {
 
   protected function handleCollectionGET($req) {
     $query = $this->entityQuery->get($req['entityType']);
-    $bundles = $req['config']['entryPoint']['bundles'];
-    if ($bundles) {
+    if (isset($req['config']['entryPoint']['bundles'])) {
+      $bundles = $req['config']['entryPoint']['bundles'];
       $entity_type = $this->entityManager->getDefinition($req['entityType'], FALSE);
       $query->condition($entity_type->getKey('bundle'), $bundles, 'IN');
     }
