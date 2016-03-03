@@ -122,7 +122,8 @@ class EndpointController implements ContainerInjectionInterface {
     }
 
     $req['storage']->save($entity);
-    return new Response(new DocumentContext($entity, $req['config'], $req['options']), 201);
+    $doc->data = $entity;
+    return new Response($doc, 201);
   }
 
   protected function optionsFor($request) {
