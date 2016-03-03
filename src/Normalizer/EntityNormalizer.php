@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\jsonapi\Normalizer\ContentEntityNormalizer.
+ * Contains \Drupal\jsonapi\Normalizer\EntityNormalizer.
  */
 
 namespace Drupal\jsonapi\Normalizer;
@@ -16,7 +16,7 @@ use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 /**
  * Normalizes/denormalizes Drupal content entities into an array structure.
  */
-class ContentEntityNormalizer extends NormalizerBase implements DenormalizerInterface {
+class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
 
   /**
    * The interface or class that this Normalizer supports.

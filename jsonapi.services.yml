@@ -11,8 +11,8 @@ services:
     class: Drupal\jsonapi\Normalizer\FieldItemNormalizer
     tags:
       - { name: normalizer, priority: 10 }
-  jsonapi.normalizer.content_entity:
-      class: Drupal\jsonapi\Normalizer\ContentEntityNormalizer
+  jsonapi.normalizer.entity:
+      class: Drupal\jsonapi\Normalizer\EntityNormalizer
       arguments: ['@entity.manager']
       tags:
         - { name: normalizer, priority: 10 }
