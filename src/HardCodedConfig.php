@@ -125,7 +125,7 @@ class HardCodedConfig {
       $nec = $this->prepareEndpointConfig($endpointConfig);
       $entityType = $nec['entityType'];
       $endpoints[$path] = $nec;
-      if ($endpointConfig['bundles']) {
+      if (isset($endpointConfig['bundles'])) {
         // the endpoint applies to only certain bundles,
         if (!isset($bundles[$entityType])) {
           $bundles[$entityType] = [];
