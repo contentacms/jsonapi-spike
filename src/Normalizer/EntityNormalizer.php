@@ -10,6 +10,7 @@ namespace Drupal\jsonapi\Normalizer;
 use Drupal\jsonapi\ResourceObject;
 use Drupal\serialization\Normalizer\NormalizerBase;
 use Drupal\jsonapi\JsonApiEntityReference;
+use Drupal\Core\Field\EntityReferenceFieldItemList;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
@@ -94,8 +95,10 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
           $innerContext = $context;
           $innerContext['jsonapi_path'][] = $outputName;
           $child = $this->serializer->normalize($field, 'jsonapi', $innerContext);
-          if ($child instanceof JsonApiEntityReference) {
-            $relationships[$outputName] = $child->normalize();
+          if ($field instanceof EntityReferenceFieldItemList) {
+            if ($child) {
+              $relationships[$outputName] = $child->normalize();
+            }
           } else {
             $attributes[$outputName] = $child;
           }
