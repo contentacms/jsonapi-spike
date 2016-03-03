@@ -17,7 +17,8 @@ class ResourceObjectNormalizer extends NormalizerBase {
       "type" => $object->type,
       "id" => $object->id,
       "attributes" => $object->attributes,
-      "relationships" => $object->relationships
+      "relationships" => $object->relationships,
+      "meta" => $object->meta
     ];
   }
 }
