@@ -116,6 +116,11 @@ class EndpointController implements ContainerInjectionInterface {
     }
 
     $entity = $req['requestDocument']->data;
+
+    if (!$entity->access('create')) {
+      return $this->errorResponse(403, "Forbidden", "You are not authorized to create this entity.");
+    }
+
     $req['storage']->save($entity);
     return new Response(new DocumentContext($entity, $req['config'], $req['options']), 201);
   }
