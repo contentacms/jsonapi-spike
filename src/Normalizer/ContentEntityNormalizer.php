@@ -182,7 +182,7 @@ class ContentEntityNormalizer extends NormalizerBase implements DenormalizerInte
     }
 
     if (!isset($source[$jsonBundleKey])) {
-      throw new UnexpectedValueException("You must specific " . $jsonBundleKey);
+      throw new UnexpectedValueException("You must specificy " . $jsonBundleKey);
     }
 
     $bundleId = $source[$jsonBundleKey];
