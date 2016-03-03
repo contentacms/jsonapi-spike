@@ -100,7 +100,7 @@ class EndpointController implements ContainerInjectionInterface {
     }
     $entities = $req['storage']->loadMultiple($query->execute());
     $output = array_values(array_filter($entities, function($entity) { return $entity->access('view'); }));
-    return new Response(new DocumentContext($output, $req['config'], $req['options'], 200));
+    return new Response(new DocumentContext($output, $req['config'], $req['options']), 200);
   }
 
   protected function handleCollectionPOST($req) {
