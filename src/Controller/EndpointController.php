@@ -101,6 +101,20 @@ class EndpointController implements ContainerInjectionInterface {
     return new Response(new DocumentContext($entity, $req['config'], $req['options']), 200);
   }
 
+  protected function handleIndividualDELETE($req) {
+    $entity = $req['storage']->load($req['id']);
+
+    if (!$entity || !$this->inAllowedBundles($entity, $req)) {
+      return $this->errorResponse(404, $req['entityType'] . " not found", "where id=" . $req['id']);
+    }
+
+    if (!$entity->access('delete')) {
+      return $this->errorResponse(403, "Access denied to " . $req['entityType'], "where id=" . $req['id']);
+    }
+    $req['storage']->delete([$entity]);
+    return new SymfonyResponse(null, 204);
+  }
+
   protected function handleCollectionGET($req) {
     $query = $this->entityQuery->get($req['entityType']);
     if (isset($req['config']['entryPoint']['bundles'])) {

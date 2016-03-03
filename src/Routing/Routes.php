@@ -53,7 +53,7 @@ class Routes {
         [],     # options
         '',     # host
         [],     # schemes
-        ["GET"] # methods
+        ["GET", "PATCH", "DELETE"] # methods
       );
 
       // Related endpoint, like /api/v1/photos/123/comments
