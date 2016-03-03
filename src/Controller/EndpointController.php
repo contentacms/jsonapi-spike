@@ -110,7 +110,7 @@ class EndpointController implements ContainerInjectionInterface {
     }
 
     $resource = $doc->data;
-    if (!is_null($resource->id)) {
+    if (!is_null($resource->id())) {
       // http://jsonapi.org/format/#crud-creating-client-ids
       return $this->errorResponse(403, "Forbidden", "This server does not accept client-generated IDs");
     }

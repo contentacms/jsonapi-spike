@@ -38,11 +38,15 @@ class ContentEntityNormalizer extends NormalizerBase implements DenormalizerInte
     $record['meta'][$key] = $value;
   }
 
+  protected function bundleLabel($entityTypeDefinition) {
+    return strtolower(preg_replace('/\s/', '-', $entityTypeDefinition->getBundleLabel()));
+  }
+
   // This exposes fields (in the JSONAPI sense) that are not fields
   // in the Drupal sense. They are eligible to be included as record
   // attributes or serve as the record's `type` or `id`.
   protected function coreFields($object) {
-    $bundleLabel = strtolower(preg_replace('/\s/', '-', $object->getEntityType()->getBundleLabel()));
+    $bundleLabel = $this->bundleLabel($object->getEntityType());
     return [
       'entity-type' => $object->getEntityTypeId(),
       'id' => $object->id(),
@@ -154,43 +158,64 @@ class ContentEntityNormalizer extends NormalizerBase implements DenormalizerInte
     $config = $context['config']['entryPoint'];
     $entityType = $config['entityType'];
     $entityTypeDefinition = $this->entityManager->getDefinition($config['entityType'], FALSE);
+
     $bundleKey = $entityTypeDefinition->getKey('bundle');
-
-    // If this endpoint only handles a single bundle, we don't need to discover the bundleId from the request.
-    if (isset($config['bundles']) && count($config['bundles']) == 1) {
-      $bundleId = $config['bundles'][0];
-    } else {
-      $bundleLabel = strtolower($entityTypeDefinition->getBundleLabel());
-      $fields = $config['fields'];
-
-      // The user's fields config can do either:
-      //    "bundle" => "type"
-      // or
-      //    "vocabulary" => "type"
-      // where "vocabulary" happens to be the bundle label for this
-      // entity type. So we look for either here.
-      foreach([$bundleLabel, "bundle"] as $candidate) {
-        if (isset($fields[$candidate])) {
-          $jsonBundleKey = $fields[$candidate]['as'];
-          break;
-        }
+    $bundleLabel = $this->bundleLabel($entityTypeDefinition);
+    foreach($config['fields'] as $drupalName => $jsonConfig) {
+      // These are all ways people are allowed to reference the
+      // bundleId in their configuration. It doesn't matter which we
+      // find as long as we find one.
+      if ($drupalName == $bundleLabel || $drupalName == $bundleKey || $drupalName == 'bundle') {
+        $jsonBundleKey = $jsonConfig['as'];
+        break;
       }
-
-      if (!isset($jsonBundleKey)) {
-        throw new UnexpectedValueException("The configuration for this endpoint needs to include either 'bundle' or " . $bundleLabel . " in its fields so we can disambiguate what type of entity you are trying to submit");
-      }
-
-      if (!isset($payload[$jsonBundleKey])) {
-        throw new UnexpectedValueException("You must include a value for " . $jsonBundleKey . " so we know what type you are submitting.");
-      }
-
-      $bundleId = $payload[$jsonBundleKey];
     }
 
+    if (!isset($jsonBundleKey)) {
+      if (isset($config['bundles']) && count($config['bundles']) == 1) {
+        $bundleId = $config['bundles'][0];
+      } else {
+        throw new UnexpectedValueException("This endpoint encompasses multiple Drupal bundles, but you haven't exposed the bundle name in your API. So we can't tell what type of entity you're trying to create.");
+      }
+    }
 
-    return $context['storage']->create([
-      $bundleKey => $bundleId
-    ]);
+    if ($jsonBundleKey == 'type' || $jsonBundleKey == 'id') {
+      $source = $payload;
+    } else {
+      $source = $payload['attributes'];
+    }
+
+    if (!isset($source[$jsonBundleKey])) {
+      throw new UnexpectedValueException("You must specific " . $jsonBundleKey);
+    }
+
+    $bundleId = $source[$jsonBundleKey];
+
+    $inputs = [];
+    foreach($context['jsonapi_document']->fieldsFor($entityType, $bundleId) as $drupalName => $jsonConfig) {
+      if ($drupalName == $bundleLabel || $drupalName == $bundleKey || $drupalName == 'bundle') {
+        // We already grabbed the bundle ID
+        continue;
+      }
+      $jsonName = $jsonConfig['as'];
+      if ($jsonName == 'type') {
+        $inputs[$drupalName] = $payload['type'];
+      } else if ($jsonName == 'id' && isset($payload['id'])) {
+        $inputs[$drupalName] = $payload['id'];
+      } else if (isset($payload['attributes'][$jsonName])) {
+         $inputs[$drupalName] = $payload['attributes'][$jsonName];
+      }
+    }
+
+    if (isset($inputs['id'])) {
+      $idKey = $entityTypeDefinition->getKey('id');
+      $inputs[$idKey] = $inputs['id'];
+      unset($inputs['id']);
+    }
+
+    $inputs[$bundleKey] = $bundleId;
+
+    return $context['storage']->create($inputs); ;
   }
 
 }

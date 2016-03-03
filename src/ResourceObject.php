@@ -13,4 +13,8 @@ class ResourceObject {
     $this->attributes = isset($data['attributes']) ? $data['attributes'] : [];
     $this->relationships = isset($data['relationships']) ? $data['relationships'] : [];
   }
+
+  public function id() {
+    return $this->id;
+  }
 }
