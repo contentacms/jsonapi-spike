@@ -168,6 +168,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
   protected function identifyBundle($payload, $config, $entityType, $entityTypeDefinition) {
     $bundleKey = $entityTypeDefinition->getKey('bundle');
     $bundleLabel = $this->bundleLabel($entityTypeDefinition);
+    $jsonBundleKey = null;
     foreach($config['fields'] as $drupalName => $jsonConfig) {
       // These are all ways people are allowed to reference the
       // bundleId in their configuration. It doesn't matter which we
@@ -217,6 +218,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
     $entityType = $config['entityType'];
     $entityTypeDefinition = $this->entityManager->getDefinition($config['entityType'], FALSE);
     $bundle = $this->identifyBundle($payload, $config, $entityType, $entityTypeDefinition);
+    $fieldDefinitions = $this->entityManager->getFieldDefinitions($config['entityType'], $bundle['id']);
     $inputs = [];
 
     foreach($doc->fieldsFor($entityType, $bundle['id']) as $drupalName => $jsonConfig) {
@@ -231,6 +233,12 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
         $inputs[$drupalName] = $payload['id'];
       } else if (isset($payload['attributes'][$jsonName])) {
          $inputs[$drupalName] = $payload['attributes'][$jsonName];
+      } else if (isset($payload['relationships'][$jsonName]['data'])) {
+        if ($fieldDefinitions[$drupalName]->getFieldStorageDefinition()->isMultiple()) {
+          $inputs[$drupalName] = array_map(function($elt){ return ["target_id" => $elt['id']]; }, $payload['relationships'][$jsonName]['data']);
+        } else {
+          $inputs[$drupalName] = $payload['relationships'][$jsonName]['data']['id'];
+        }
       }
     }
 
