@@ -154,11 +154,7 @@ class ContentEntityNormalizer extends NormalizerBase implements DenormalizerInte
 
   }
 
-  public function denormalize($payload, $class, $format = NULL, array $context = []) {
-    $config = $context['config']['entryPoint'];
-    $entityType = $config['entityType'];
-    $entityTypeDefinition = $this->entityManager->getDefinition($config['entityType'], FALSE);
-
+  protected function identifyBundle($payload, $config, $entityType, $entityTypeDefinition) {
     $bundleKey = $entityTypeDefinition->getKey('bundle');
     $bundleLabel = $this->bundleLabel($entityTypeDefinition);
     foreach($config['fields'] as $drupalName => $jsonConfig) {
@@ -191,13 +187,26 @@ class ContentEntityNormalizer extends NormalizerBase implements DenormalizerInte
 
     $bundleId = $source[$jsonBundleKey];
 
+    return [
+      "id" => $bundleId,
+      "jsonKey" => $jsonBundleKey,
+      "key" => $bundleKey
+    ];
+  }
+
+  public function denormalize($payload, $class, $format = NULL, array $context = []) {
+    $config = $context['config']['entryPoint'];
+    $entityType = $config['entityType'];
+    $entityTypeDefinition = $this->entityManager->getDefinition($config['entityType'], FALSE);
+    $bundle = $this->identifyBundle($payload, $config, $entityType, $entityTypeDefinition);
     $inputs = [];
-    foreach($context['jsonapi_document']->fieldsFor($entityType, $bundleId) as $drupalName => $jsonConfig) {
-      if ($drupalName == $bundleLabel || $drupalName == $bundleKey || $drupalName == 'bundle') {
+
+    foreach($context['jsonapi_document']->fieldsFor($entityType, $bundle['id']) as $drupalName => $jsonConfig) {
+      $jsonName = $jsonConfig['as'];
+      if ($jsonName == $bundle['jsonKey']) {
         // We already grabbed the bundle ID
         continue;
       }
-      $jsonName = $jsonConfig['as'];
       if ($jsonName == 'type') {
         $inputs[$drupalName] = $payload['type'];
       } else if ($jsonName == 'id' && isset($payload['id'])) {
@@ -213,7 +222,7 @@ class ContentEntityNormalizer extends NormalizerBase implements DenormalizerInte
       unset($inputs['id']);
     }
 
-    $inputs[$bundleKey] = $bundleId;
+    $inputs[$bundle['key']] = $bundle['id'];
 
     return $context['storage']->create($inputs); ;
   }
