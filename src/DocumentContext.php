@@ -70,7 +70,7 @@ class DocumentContext {
     return $output;
   }
   public function debugEnabled() {
-    return $this->options['debug'];
+    return isset($this->options['debug']) && $this->options['debug'];
   }
   public function addMeta($key, $value) {
     if (!$this->meta) {

@@ -49,7 +49,7 @@ class EndpointController implements ContainerInjectionInterface {
 
   public function handle(Request $request, $_route, $scope, $endpoint, $id=null, $related=null) {
     return $this->withErrorTrap(function () use ($request, $_route, $scope, $endpoint, $id, $related) {
-      $handler = 'handle' . ucwords(end(explode(".", $_route))) . $request->getMethod();
+      $handler = 'handle' . ucwords(last(explode(".", $_route))) . $request->getMethod();
       if (is_callable([$this, $handler])) {
         $args = [
           "config" => $this->config->forEndpoint($scope, $endpoint),
@@ -162,3 +162,9 @@ class EndpointController implements ContainerInjectionInterface {
   }
 
 }
+
+// This cleans up a strict mode warning, because the 'end' function
+// takes an array reference a mutates the underlying array's internal
+// pointer. This wraps it in a function that calls by value. Oh,
+// PHP...
+function last( $array ) { return end( $array ); }

@@ -189,12 +189,12 @@ class HardCodedConfig {
   private function prepareEndpointConfig($endpoint) {
     $output = [
       "entityType" => $endpoint['entityType'],
-      "bundles" => $endpoint['bundles'],
+      "bundles" => isset($endpoint['bundles']) ? $endpoint['bundles'] : [],
       "defaultInclude" => $this->prepareDefaultInclude($endpoint),
       "fields" => $this->prepareFields($endpoint, null)
     ];
 
-    if ($endpoint['extensions']) {
+    if (isset($endpoint['extensions'])) {
       $output['extensions'] = [];
       foreach($endpoint['extensions'] as $bundle => $extension) {
         $output['extensions'][$bundle] = [
