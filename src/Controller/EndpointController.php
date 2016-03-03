@@ -77,10 +77,20 @@ class EndpointController implements ContainerInjectionInterface {
     });
   }
 
+  protected function inAllowedBundles($entity, $req) {
+    if (isset($req['config']['entryPoint']['bundles'])) {
+      $bundles = $req['config']['entryPoint']['bundles'];
+      if (!in_array($entity->bundle(), $bundles)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   protected function handleIndividualGET($req) {
     $entity = $req['storage']->load($req['id']);
 
-    if (!$entity) {
+    if (!$entity || !$this->inAllowedBundles($entity, $req)) {
       return $this->errorResponse(404, $req['entityType'] . " not found", "where id=" . $req['id']);
     }
 
