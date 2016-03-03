@@ -96,8 +96,16 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
           $innerContext['jsonapi_path'][] = $outputName;
           $child = $this->serializer->normalize($field, 'jsonapi', $innerContext);
           if ($field instanceof EntityReferenceFieldItemList) {
-            if ($child) {
+            if (is_array($child)) {
+              $relationships[$outputName] = array_map(function($elt){
+                if ($elt instanceof JsonApiEntityReference) {
+                  return $elt->normalize();
+                }
+              }, $child);
+            } else if ($child instanceof JsonApiEntityReference) {
               $relationships[$outputName] = $child->normalize();
+            } else {
+              $relationships[$outputName] = $child;
             }
           } else {
             $attributes[$outputName] = $child;
