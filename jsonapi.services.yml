@@ -13,6 +13,7 @@ services:
       - { name: normalizer, priority: 10 }
   jsonapi.normalizer.content_entity:
       class: Drupal\jsonapi\Normalizer\ContentEntityNormalizer
+      arguments: ['@entity.manager']
       tags:
         - { name: normalizer, priority: 10 }
   jsonapi.normalizer.field_item_list:

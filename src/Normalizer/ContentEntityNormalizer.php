@@ -11,6 +11,7 @@ use Drupal\jsonapi\ResourceObject;
 use Drupal\serialization\Normalizer\NormalizerBase;
 use Drupal\jsonapi\JsonApiEntityReference;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
 /**
  * Normalizes/denormalizes Drupal content entities into an array structure.
@@ -24,6 +25,11 @@ class ContentEntityNormalizer extends NormalizerBase implements DenormalizerInte
    */
   protected $supportedInterfaceOrClass = ['Drupal\Core\Entity\EntityInterface'];
   protected $format = array('jsonapi');
+
+
+  public function __construct($entityManager) {
+    $this->entityManager = $entityManager;
+  }
 
   protected function addMeta(&$record, $key, $value) {
     if (!$record['meta']) {
@@ -145,7 +151,46 @@ class ContentEntityNormalizer extends NormalizerBase implements DenormalizerInte
   }
 
   public function denormalize($payload, $class, $format = NULL, array $context = []) {
-    return new ResourceObject($payload);
+    $config = $context['config']['entryPoint'];
+    $entityType = $config['entityType'];
+    $entityTypeDefinition = $this->entityManager->getDefinition($config['entityType'], FALSE);
+    $bundleKey = $entityTypeDefinition->getKey('bundle');
+
+    // If this endpoint only handles a single bundle, we don't need to discover the bundleId from the request.
+    if (isset($config['bundles']) && count($config['bundles']) == 1) {
+      $bundleId = $config['bundles'][0];
+    } else {
+      $bundleLabel = strtolower($entityTypeDefinition->getBundleLabel());
+      $fields = $config['fields'];
+
+      // The user's fields config can do either:
+      //    "bundle" => "type"
+      // or
+      //    "vocabulary" => "type"
+      // where "vocabulary" happens to be the bundle label for this
+      // entity type. So we look for either here.
+      foreach([$bundleLabel, "bundle"] as $candidate) {
+        if (isset($fields[$candidate])) {
+          $jsonBundleKey = $fields[$candidate]['as'];
+          break;
+        }
+      }
+
+      if (!isset($jsonBundleKey)) {
+        throw new UnexpectedValueException("The configuration for this endpoint needs to include either 'bundle' or " . $bundleLabel . " in its fields so we can disambiguate what type of entity you are trying to submit");
+      }
+
+      if (!isset($payload[$jsonBundleKey])) {
+        throw new UnexpectedValueException("You must include a value for " . $jsonBundleKey . " so we know what type you are submitting.");
+      }
+
+      $bundleId = $payload[$jsonBundleKey];
+    }
+
+
+    return $context['storage']->create([
+      $bundleKey => $bundleId
+    ]);
   }
 
 }

@@ -62,10 +62,7 @@ class EndpointController implements ContainerInjectionInterface {
 
         $content = $request->getContent();
         if ($content) {
-          $args['requestDocument'] = $this->serializer->deserialize($content, 'Drupal\jsonapi\DocumentContext', 'jsonapi', [
-            "options" => $args['options'],
-            "config" => $args['config']
-          ]);
+          $args['requestDocument'] = $this->serializer->deserialize($content, 'Drupal\jsonapi\DocumentContext', 'jsonapi', $args);
         }
         $response = $this->{$handler}($args);
       } else {
