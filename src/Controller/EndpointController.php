@@ -115,10 +115,9 @@ class EndpointController implements ContainerInjectionInterface {
       return $this->errorResponse(403, "Forbidden", "This server does not accept client-generated IDs");
     }
 
-    return new Response(["errors" => [[
-      "title" => "Implementation in progress",
-      "description" => $req['requestDocument']
-    ]]], 201);
+    $entity = $req['requestDocument']->data;
+    $req['storage']->save($entity);
+    return new Response(new DocumentContext($entity, $req['config'], $req['options']), 201);
   }
 
   protected function optionsFor($request) {
