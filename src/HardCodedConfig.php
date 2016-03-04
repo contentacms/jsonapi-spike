@@ -48,11 +48,11 @@ class HardCodedConfig {
           // they should appear.
           'article' => [
             'fields' => [
-              'field_body' => 'body',
-              'field_byline' => 'byline',
-              'field_primary_image' => 'primary-image',
-              'field_summary' => 'summary',
-              'field_topic' => 'topic'
+              'field_body',
+              'field_byline',
+              'field_primary_image',
+              'field_summary',
+              'field_topic'
             ],
             // Embed related topic entities by default
             // (JSONAPI calls this is the "included"
@@ -62,12 +62,39 @@ class HardCodedConfig {
             // in this same api version.
             'defaultInclude' => ['topic', 'primary-image']
           ],
+          'event' => [
+            'fields' => [
+              'field_agenda',
+              'field_contact_email',
+              'field_contact_name',
+              'field_credit_types',
+              'field_end_date',
+              'field_featured',
+              'field_host',
+              'field_lu_credit',
+              'field_materials',
+              'field_overview',
+              'field_primary_image',
+              'field_register_url',
+              'field_registration',
+              'field_speakers',
+              'field_sponsors',
+              'field_start_date',
+              'field_topic',
+              'field_venue_address',
+              'field_venue_city',
+              'field_venue_country',
+              'field_venue_name',
+              'field_venue_postal_code',
+              'field_venue_state'
+            ]
+          ],
           'image' => [
             'fields' => [
               'title' => 'caption',
-              'field_crops' => 'crops',
-              'field_original_height' => 'original-height',
-              'field_original_width' => 'original-width',
+              'field_crops',
+              'field_original_height',
+              'field_original_width',
               'field_url' => 'url'
             ]
           ]
@@ -182,6 +209,10 @@ class HardCodedConfig {
 
     if (isset($endpoint['fields'])) {
       foreach ($endpoint['fields'] as $key => $value) {
+        if (is_numeric($key)) {
+          $key = $value;
+          $value = strtolower(preg_replace('/^field-/', '', preg_replace('/_/', '-', $key)));
+        }
         if ($value == 'id') { $sawId = true; }
         if ($value == 'type') { $sawType = true; }
         $output[$key] = [ "as" => $value ];
