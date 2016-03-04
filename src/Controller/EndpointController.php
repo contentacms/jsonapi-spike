@@ -130,10 +130,7 @@ class EndpointController implements ContainerInjectionInterface {
       // client's intent to change these fields, but the server is
       // also free to make its own arbitrary changes in response, as
       // long as they're reflected in the reply.
-      $doc->addMeta('keyExists.' . $name, array_key_exists($name, $drupalInputs));
-      $doc->addMeta('editable.' . $name, $field->access('edit'));
       if (array_key_exists($name, $drupalInputs) && $field->access('edit')) {
-        $doc->addMeta('value.' . $name, $drupalInputs[$name]);
         $entity->set($name, $drupalInputs[$name]);
       }
     }
