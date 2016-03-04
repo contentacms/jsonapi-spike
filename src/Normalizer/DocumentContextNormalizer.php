@@ -19,6 +19,7 @@ class DocumentContextNormalizer extends NormalizerBase implements DenormalizerIn
    * @var string
    */
   protected $supportedInterfaceOrClass = 'Drupal\jsonapi\DocumentContext';
+  protected $format = ['jsonapi'];
 
   /**
    * {@inheritdoc}

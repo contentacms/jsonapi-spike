@@ -16,6 +16,7 @@ class FieldItemNormalizer extends NormalizerBase {
    * @var string
    */
   protected $supportedInterfaceOrClass = 'Drupal\Core\Field\FieldItemInterface';
+  protected $format = array('jsonapi');
 
   /**
    * {@inheritdoc}

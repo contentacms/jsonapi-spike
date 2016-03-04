@@ -2,7 +2,7 @@
 
 /*
   This will ultimately belong in D8's standard configuration
-  system. I'm hard-coding for to ship the minimum viable thing now.
+  system. I'm hard-coding to ship the minimum viable thing now.
 */
 
 namespace Drupal\jsonapi;
@@ -10,7 +10,7 @@ namespace Drupal\jsonapi;
 class HardCodedConfig {
   private static $_config = [
     // Versioned API mount point.
-    '/jsonapi/v2' => [
+    '/jsonapi/v1' => [
       // An endpoint definition. Will expand to:
       //   /jsonapi/v1/nodes
       //   /jsonapi/v1/nodes/123
@@ -69,19 +69,6 @@ class HardCodedConfig {
         'fields' => [
           'name' => 'name',
           'vocabulary' => 'type'
-        ]
-      ],
-      '/tests' => [
-        'entityType' => 'node',
-        'bundles' => ['testing'],
-        'fields' => [
-          'title' => 'title',
-          'body' => 'body',
-          'field_favorite_article' => 'favorite-article',
-          'field_other_articles' => 'other-articles',
-          'field_topics' => 'topics',
-          'changed' => 'changed',
-          'status' => 'published'
         ]
       ]
     ]
