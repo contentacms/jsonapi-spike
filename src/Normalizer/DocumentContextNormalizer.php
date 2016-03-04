@@ -51,7 +51,7 @@ class DocumentContextNormalizer extends NormalizerBase implements DenormalizerIn
       throw new UnexpectedValueException("'data' member was not a list or object");
     }
 
-    $document = new $class(null, $context['config'], $context['options']);
+    $document = new $class($context['jsonapi_request']);
     $context['jsonapi_document'] = $document;
 
     if (isset($data['type'])) {

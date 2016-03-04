@@ -29,6 +29,7 @@ class HardCodedConfig {
         'fields' => [
           'title' => 'title',
           'status' => 'published',
+          'changed' => 'changed',
           // In this case we're choosing to make the Drupal
           // Content Type determine the JSONAPI type.
           'content-type' => 'type'
@@ -68,6 +69,19 @@ class HardCodedConfig {
         'fields' => [
           'name' => 'name',
           'vocabulary' => 'type'
+        ]
+      ],
+      '/tests' => [
+        'entityType' => 'node',
+        'bundles' => ['testing'],
+        'fields' => [
+          'title' => 'title',
+          'body' => 'body',
+          'field_favorite_article' => 'favorite-article',
+          'field_other_articles' => 'other-articles',
+          'field_topics' => 'topics',
+          'changed' => 'changed',
+          'status' => 'published'
         ]
       ]
     ]

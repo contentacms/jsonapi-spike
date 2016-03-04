@@ -68,16 +68,16 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
     }
   }
 
-  protected function normalizeFields($object, $context, $doc) {
+  protected function normalizeFields($object, $context, $req) {
     $attributes = [];
     $relationships = [];
     $unused = [];
     $coreFields = $this->coreFields($object);
 
-    $fields = $doc->fieldsFor($coreFields['entity-type'], $coreFields['bundle']);
+    $fields = $req->fieldsFor($coreFields['entity-type'], $coreFields['bundle']);
     if (count($context['jsonapi_path']) == 0) {
       // Top level entries expose their defaultInclude configuration to their children
-      $context['jsonapi_default_include'] = $doc->defaultIncludeFor($coreFields['entity-type'], $coreFields['bundle']);
+      $context['jsonapi_default_include'] = $req->defaultIncludeFor($coreFields['entity-type'], $coreFields['bundle']);
     }
 
     // We need to look ahead and discover the final JSONAPI type
@@ -91,21 +91,21 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
 
       if (isset($fields[$name])) {
         $outputName = $fields[$name]["as"];
-        if ($doc->shouldIncludeField($type, $outputName)) {
+        if ($req->shouldIncludeField($type, $outputName)) {
           $innerContext = $context;
           $innerContext['jsonapi_path'][] = $outputName;
           $child = $this->serializer->normalize($field, 'jsonapi', $innerContext);
           if ($field instanceof EntityReferenceFieldItemList) {
             if (is_array($child)) {
-              $relationships[$outputName] = array_map(function($elt){
+              $relationships[$outputName] = ["data" => array_map(function($elt){
                 if ($elt instanceof JsonApiEntityReference) {
                   return $elt->normalize();
                 }
-              }, $child);
+              }, $child)];
             } else if ($child instanceof JsonApiEntityReference) {
-              $relationships[$outputName] = $child->normalize();
+              $relationships[$outputName] = ["data" => $child->normalize()];
             } else {
-              $relationships[$outputName] = $child;
+              $relationships[$outputName] = ["data" => $child];
             }
           } else {
             $attributes[$outputName] = $child;
@@ -130,7 +130,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
       $record['relationships'] = &$relationships;
     }
 
-    if ($doc->debugEnabled()) {
+    if ($req->debugEnabled()) {
       $this->addMeta($record, 'unused-fields', $unused);
     }
 
@@ -147,17 +147,20 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
     );
 
     $doc = $context['jsonapi_document'];
+    $req = $context['jsonapi_request'];
 
-    $record = $this->normalizeFields($object, $context, $doc);
+    $record = $this->normalizeFields($object, $context, $req);
     $record['id'] = $record['attributes']['id'];
     unset($record['attributes']['id']);
     $record['type'] = $record['attributes']['type'];
     unset($record['attributes']['type']);
 
-    if (count($context['jsonapi_path']) == 0) {
+    if ($req->requestType() == 'relationship') {
+      return (new JsonApiEntityReference($record))->normalize();
+    } else if (count($context['jsonapi_path']) == 0) {
       return $record;
     } else {
-      if ($doc->shouldInclude($context['jsonapi_path'], $context['jsonapi_default_include'])) {
+      if ($req->shouldInclude($context['jsonapi_path'], $context['jsonapi_default_include'])) {
         $doc->addIncluded($record);
       }
       return new JsonApiEntityReference($record);
@@ -214,14 +217,14 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
 
   public function denormalize($payload, $class, $format = NULL, array $context = []) {
     $doc = $context['jsonapi_document'];
-    $config = $context['config']['entryPoint'];
-    $entityType = $config['entityType'];
-    $entityTypeDefinition = $this->entityManager->getDefinition($config['entityType'], FALSE);
-    $bundle = $this->identifyBundle($payload, $config, $entityType, $entityTypeDefinition);
-    $fieldDefinitions = $this->entityManager->getFieldDefinitions($config['entityType'], $bundle['id']);
+    $req = $context['jsonapi_request'];
+
+    $entityTypeDefinition = $this->entityManager->getDefinition($req->entityType(), FALSE);
+    $bundle = $this->identifyBundle($payload, $req->config()['entryPoint'], $entityType, $entityTypeDefinition);
+    $fieldDefinitions = $this->entityManager->getFieldDefinitions($req->entityType(), $bundle['id']);
     $inputs = [];
 
-    foreach($doc->fieldsFor($entityType, $bundle['id']) as $drupalName => $jsonConfig) {
+    foreach($req->fieldsFor($req->entityType(), $bundle['id']) as $drupalName => $jsonConfig) {
       $jsonName = $jsonConfig['as'];
       if ($jsonName == $bundle['jsonKey']) {
         // We already grabbed the bundle ID
@@ -231,13 +234,17 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
         $inputs[$drupalName] = $payload['type'];
       } else if ($jsonName == 'id' && isset($payload['id'])) {
         $inputs[$drupalName] = $payload['id'];
-      } else if (isset($payload['attributes'][$jsonName])) {
+      } else if (array_key_exists($jsonName, $payload['attributes'])) {
          $inputs[$drupalName] = $payload['attributes'][$jsonName];
-      } else if (isset($payload['relationships'][$jsonName]['data'])) {
+      } else if (isset($payload['relationships'][$jsonName]) && array_key_exists('data', $payload['relationships'][$jsonName])) {
         if ($fieldDefinitions[$drupalName]->getFieldStorageDefinition()->isMultiple()) {
           $inputs[$drupalName] = array_map(function($elt){ return ["target_id" => $elt['id']]; }, $payload['relationships'][$jsonName]['data']);
         } else {
-          $inputs[$drupalName] = $payload['relationships'][$jsonName]['data']['id'];
+          if (isset($payload['relationships'][$jsonName]['data']['id'])) {
+            $inputs[$drupalName] = ["target_id" => $payload['relationships'][$jsonName]['data']['id'] ];
+          } else {
+            $inputs[$drupalName] = ["target_id" => null];
+          }
         }
       }
     }
@@ -249,7 +256,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
     }
 
     $inputs[$bundle['key']] = $bundle['id'];
-    return new ResourceObject($payload, $inputs, $context['storage']);
+    return new ResourceObject($payload, $inputs, $req->storage());
   }
 
 }

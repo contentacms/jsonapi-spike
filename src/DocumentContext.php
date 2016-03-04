@@ -2,13 +2,29 @@
 
 namespace Drupal\jsonapi;
 
+/*
+  This class represents a top-level JSONAPI document.
+
+ */
 class DocumentContext {
-  public function __construct($data, $config, $options) {
+  public function __construct(RequestContext $req, $data=null) {
+    $this->req = $req;
+
+    // Our main payload, typically an Entity or list of Entities (when
+    // we're representing content out of Drupal) or a ResourceObject
+    // or list of ResourceObjects (when we're representing a request
+    // that came from the client)
     $this->data = $data;
-    $this->config = $config;
-    $this->meta = null;
-    $this->options = $options;
+
+    // storage for any related resources
     $this->included = [];
+
+    // Metadata (in the JSONAPI sense) that has been attached to this
+    // document so it can be available to clients. We use this for
+    // debug output, for example.
+    $this->meta = null;
+
+
   }
   public function addIncluded($record) {
     $type = $record['type'];
@@ -20,45 +36,6 @@ class DocumentContext {
       $this->included[$type][$id] = $record;
     }
   }
-  public function shouldInclude($path, $defaultInclude) {
-    if (isset($this->options['include'])) {
-      $include = $this->options['include'];
-    } else {
-      $include = $defaultInclude;
-    }
-    foreach($include as $included) {
-      if ($path == array_slice($included, 0, count($path))) {
-        return true;
-      }
-    }
-  }
-  protected function endpointFor($entityType, $bundleId) {
-    if (isset($this->config['scope']['bundles'][$entityType][$bundleId])) {
-      return $this->config['scope']['bundles'][$entityType][$bundleId];
-    }
-    if (isset($this->config['scope']['entities'][$entityType])) {
-      return $this->config['scope']['entities'][$entityType];
-    }
-  }
-  protected function configFor($entityType, $bundleId) {
-    $endpointConfig = $this->config['scope']['endpoints'][$this->endpointFor($entityType, $bundleId)];
-    if (isset($endpointConfig['extensions'][$bundleId])) {
-      return $endpointConfig['extensions'][$bundleId];
-    } else {
-      return $endpointConfig;
-    }
-  }
-  public function fieldsFor($entityType, $bundleId) {
-    return $this->configFor($entityType, $bundleId)['fields'];
-  }
-  public function defaultIncludeFor($entityType, $bundleId) {
-    return $this->configFor($entityType, $bundleId)['defaultInclude'];
-  }
-
-
-  public function shouldIncludeField($type, $field) {
-    return $field == 'id' || !isset($this->options['fields'][$type]) || in_array($field, $this->options['fields'][$type]);
-  }
 
   public function allIncluded() {
     $output = [];
@@ -69,9 +46,6 @@ class DocumentContext {
     }
     return $output;
   }
-  public function debugEnabled() {
-    return isset($this->options['debug']) && $this->options['debug'];
-  }
   public function addMeta($key, $value) {
     if (!$this->meta) {
       $this->meta = [];
@@ -80,9 +54,9 @@ class DocumentContext {
   }
 
   public function meta() {
-    if ($this->debugEnabled()) {
-      $this->addMeta('options', $this->options);
-      $this->addMeta('config', $this->config);
+    if ($this->req->debugEnabled()) {
+      $this->addMeta('options', $this->req->options());
+      $this->addMeta('config', $this->req->config());
     }
     return $this->meta;
   }

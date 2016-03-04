@@ -9,9 +9,9 @@ class JsonApiEntityReference {
   }
 
   public function normalize() {
-    return [ "data" => [
+    return [
       "id" => $this->record["id"],
       "type" => $this->record["type"]
-    ]];
+    ];
   }
 }
