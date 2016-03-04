@@ -218,7 +218,22 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
   public function denormalize($payload, $class, $format = NULL, array $context = []) {
     $doc = $context['jsonapi_document'];
     $req = $context['jsonapi_request'];
+    if ($req->requestType() == 'relationship') {
+      return $this->denormalizeRelationship($req, $doc, $payload);
+    } else {
+      return $this->denormalizeResource($req, $doc, $payload);
+    }
+  }
 
+  protected function denormalizeRelationship($req, $doc, $payload) {
+    if (isset($payload['id'])) {
+      return [ "target_id" => $payload['id']];
+    } else {
+      return [ "target_id" => null ];
+    }
+  }
+
+  protected function denormalizeResource($req, $doc, $payload) {
     $entityTypeDefinition = $this->entityManager->getDefinition($req->entityType(), FALSE);
     $bundle = $this->identifyBundle($payload, $req->config()['entryPoint'], $entityType, $entityTypeDefinition);
     $fieldDefinitions = $this->entityManager->getFieldDefinitions($req->entityType(), $bundle['id']);

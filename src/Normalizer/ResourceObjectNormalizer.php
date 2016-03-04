@@ -14,11 +14,8 @@ class ResourceObjectNormalizer extends NormalizerBase {
    */
   public function normalize($object, $format = NULL, array $context = array()) {
     return [
-      "type" => $object->type,
-      "id" => $object->id,
-      "attributes" => $object->attributes,
-      "relationships" => $object->relationships,
-      "meta" => $object->meta
+      "json" => $object->json,
+      "drupal" => $object->drupal
     ];
   }
 }

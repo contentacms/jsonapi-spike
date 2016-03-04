@@ -92,8 +92,21 @@ class RequestContext {
     return $this->_id;
   }
 
+  // If we're handling a relationship endpoint, the name of the relationship
   public function related() {
     return $this->_related;
+  }
+
+  // If we're handling a relationship endpoint, the name of the relationship in Drupal's fields.
+  public function relatedAsDrupalField() {
+    if (!isset($this->_relatedAsDrupalField)) {
+      $this->_relatedAsDrupalField = $this->jsonFieldToDrupalField($this->entityType(), $this->loadEntity()->bundle(), $this->related());
+    }
+    return $this->_relatedAsDrupalField;
+  }
+
+  public function isOneToManyRelationship() {
+    return $this->loadEntity()->getFieldDefinition($this->relatedAsDrupalField())->getFieldStorageDefinition()->isMultiple();
   }
 
   public function entityType() {

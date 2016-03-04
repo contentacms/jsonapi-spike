@@ -184,7 +184,7 @@ class EndpointController implements ContainerInjectionInterface {
       return $this->errorResponse(403, "Access denied to " . $req->entityType(), "where id=" . $req->id());
     }
 
-    $fieldName = $req->jsonFieldToDrupalField($req->entityType(), $entity->bundle(), $req->related());
+    $fieldName = $req->relatedAsDrupalField();
     if (!$fieldName) {
       return $this->errorResponse(400, "Bad Request", $req->related() . " is not a known field");
     }
@@ -196,6 +196,88 @@ class EndpointController implements ContainerInjectionInterface {
     return new Response($doc, 200);
   }
 
+
+  protected function handleRelationshipPOST($req) {
+    $entity = $req->loadEntity();
+
+    if (!$entity->access('edit')) {
+      return $this->errorResponse(403, "Access denied to " . $req->entityType(), "where id=" . $req->id());
+    }
+
+    $fieldName = $req->relatedAsDrupalField();
+    if (!$fieldName) {
+      return $this->errorResponse(400, "Bad Request", $req->related() . " is not a known field");
+    }
+
+    $list = $entity->get($fieldName);
+    if (!$list instanceof EntityReferenceFieldItemList) {
+      return $this->errorResponse(400, "Bad Request", $req->related() . " is not a relationship");
+    }
+
+    if (!$req->isOneToManyRelationship()) {
+      return $this->errorResponse(405, "Method Not Allowed", "You may not POST a one-to-one relationship endpoint, use PATCH");
+    }
+
+    $doc = $req->requestDocument();
+    if (!$doc || !is_array($doc->data)) {
+      return $this->errorResponse(400, "Bad Request", "POST to a one-to-many relationship endpoint must contain an array of resources");
+    }
+
+    $existingIds = [];
+    foreach($list as $item) {
+      $existingIds[$item->target_id] = true;
+    }
+
+    foreach($doc->data as $item) {
+      if (!array_key_exists($item['target_id'], $existingIds)) {
+        $list->appendItem($item['target_id']);
+        $existingIds[$item['target_id']] = true;
+      }
+    }
+    $req->storage()->save($entity);
+    $doc->data = $list;
+    return new Response($doc, 200);
+  }
+
+  protected function handleRelationshipDELETE($req) {
+    $entity = $req->loadEntity();
+
+    if (!$entity->access('edit')) {
+      return $this->errorResponse(403, "Access denied to " . $req->entityType(), "where id=" . $req->id());
+    }
+
+    $fieldName = $req->relatedAsDrupalField();
+    if (!$fieldName) {
+      return $this->errorResponse(400, "Bad Request", $req->related() . " is not a known field");
+    }
+
+    $list = $entity->get($fieldName);
+    if (!$list instanceof EntityReferenceFieldItemList) {
+      return $this->errorResponse(400, "Bad Request", $req->related() . " is not a relationship");
+    }
+
+    if (!$req->isOneToManyRelationship()) {
+      return $this->errorResponse(405, "Method Not Allowed", "You may not DELETE a one-to-one relationship endpoint, use PATCH");
+    }
+
+    $doc = $req->requestDocument();
+    if (!$doc || !is_array($doc->data)) {
+      return $this->errorResponse(400, "Bad Request", "DELeTE to a one-to-many relationship endpoint must contain an array of resources");
+    }
+
+    $idsToDelete = [];
+    foreach($doc->data as $item) {
+      $idsToDelete[$item['target_id']] = true;
+    }
+
+    $list->filter(function($elt) use ($idsToDelete){
+      return !array_key_exists($elt->target_id, $idsToDelete);
+    });
+
+    $req->storage()->save($entity);
+    $doc->data = $list;
+    return new Response($doc, 200);
+  }
 
   protected function errorResponse($statusCode, $title, $detail) {
     # http://jsonapi.org/format/#error-objects

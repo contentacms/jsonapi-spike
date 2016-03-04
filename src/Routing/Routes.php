@@ -76,7 +76,7 @@ class Routes {
         [],     # options
         '',     # host
         [],     # schemes
-        ["GET"] # methods
+        ["GET", "POST", "DELETE"] # methods
       );
 
     }
