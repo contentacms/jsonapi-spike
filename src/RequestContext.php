@@ -82,6 +82,9 @@ class RequestContext {
         if ($key == 'fields') {
           $output['fields'] = array_map(function($fieldList){ return explode(',', $fieldList); }, $value);
         }
+        if ($key == 'filter') {
+          $output['filter'] = array_map(function($valueList){ return explode(',', $valueList); }, $value);
+        }
       }
       $this->_options = $output;
     }
@@ -100,7 +103,7 @@ class RequestContext {
   // If we're handling a relationship endpoint, the name of the relationship in Drupal's fields.
   public function relatedAsDrupalField() {
     if (!isset($this->_relatedAsDrupalField)) {
-      $this->_relatedAsDrupalField = $this->jsonFieldToDrupalField($this->entityType(), $this->loadEntity()->bundle(), $this->related());
+      $this->_relatedAsDrupalField = $this->jsonFieldToDrupalField($this->loadEntity()->bundle(), $this->related());
     }
     return $this->_relatedAsDrupalField;
   }
@@ -175,10 +178,22 @@ class RequestContext {
     return $this->configFor($entityType, $bundleId)['defaultInclude'];
   }
 
-  public function jsonFieldToDrupalField($entityType, $bundleId, $jsonField) {
-    foreach($this->fieldsFor($entityType, $bundleId) as $drupalName => $jsonConfig) {
+  protected function bundleLabel($entityTypeDefinition) {
+    return strtolower(preg_replace('/\s/', '-', $entityTypeDefinition->getBundleLabel()));
+  }
+
+  public function jsonFieldToDrupalField($bundleId, $jsonField) {
+    $entityTypeDefinition = $this->entityManager->getDefinition($this->entityType(), FALSE);
+    $bundleKey = $entityTypeDefinition->getKey('bundle');
+    $bundleLabel = $this->bundleLabel($entityTypeDefinition);
+
+    foreach($this->fieldsFor($this->entityType(), $bundleId) as $drupalName => $jsonConfig) {
       if ($jsonConfig['as'] == $jsonField) {
-        return $drupalName;
+        if ($drupalName == $bundleLabel || $drupalName == 'bundle') {
+          return $bundleKey;
+        } else {
+          return $drupalName;
+        }
       }
     }
   }

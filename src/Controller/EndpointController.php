@@ -154,6 +154,15 @@ class EndpointController implements ContainerInjectionInterface {
         $query->condition($entity_type->getKey('bundle'), $bundles, 'IN');
       }
     }
+    if (isset($req->options()['filter'])) {
+      foreach($req->options()['filter'] as $name => $values) {
+        $drupalField = $req->jsonFieldToDrupalField(null, $name);
+        if (!$drupalField) {
+          return $this->errorResponse(400, "Bad Request", "Can't filter on " . $name);
+        }
+        $query->condition($drupalField, $values, 'IN');
+      }
+    }
     $entities = $req->storage()->loadMultiple($query->execute());
     $output = array_values(array_filter($entities, function($entity) { return $entity->access('view'); }));
     return new Response(new DocumentContext($req, $output), 200);
