@@ -48,11 +48,11 @@ class HardCodedConfig {
           // they should appear.
           'article' => [
             'fields' => [
+              'field_body' => 'body',
               'field_byline' => 'byline',
-              // field_topic is an entity reference,
-              // which we're exposing as "topic"
-              'field_topic' => 'topic',
-              'field_mobiledoc' => 'mobiledoc'
+              'field_primary_image' => 'primary-image',
+              'field_summary' => 'summary',
+              'field_topic' => 'topic'
             ],
             // Embed related topic entities by default
             // (JSONAPI calls this is the "included"
@@ -60,9 +60,18 @@ class HardCodedConfig {
             // by query param. These entities will be
             // rendered based on their own endpoint config
             // in this same api version.
-            'defaultInclude' => ['topic']
+            'defaultInclude' => ['topic', 'primary-image']
+          ],
+          'image' => [
+            'fields' => [
+              'title' => 'caption',
+              'field_crops' => 'crops',
+              'field_original_height' => 'original-height',
+              'field_original_width' => 'original-width',
+              'field_url' => 'url'
+            ]
           ]
-        ]
+        ],
       ],
       '/topics' => [
         'entityType' => 'taxonomy_term',
