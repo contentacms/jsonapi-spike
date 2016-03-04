@@ -124,10 +124,16 @@ class EndpointController implements ContainerInjectionInterface {
 
     $drupalInputs = $doc->data->drupal;
     foreach ($entity as $name => $field) {
-      if (array_key_exists($name, $drupalInputs)) {
-        if (!$field->access('edit')) {
-          return $this->errorResponse(403, "Access denied to " . $req->entityType(), "You may not edit " . $name);
-        }
+      // Ignore read-only fields instead of throwing a 403. This is
+      // a nicer behavior for clients, and as far as I can tell it
+      // is spec compliant. It's true that PATCH implies the
+      // client's intent to change these fields, but the server is
+      // also free to make its own arbitrary changes in response, as
+      // long as they're reflected in the reply.
+      $doc->addMeta('keyExists.' . $name, array_key_exists($name, $drupalInputs));
+      $doc->addMeta('editable.' . $name, $field->access('edit'));
+      if (array_key_exists($name, $drupalInputs) && $field->access('edit')) {
+        $doc->addMeta('value.' . $name, $drupalInputs[$name]);
         $entity->set($name, $drupalInputs[$name]);
       }
     }

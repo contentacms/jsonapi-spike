@@ -168,32 +168,39 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
 
   }
 
-  protected function identifyBundle($payload, $config, $entityType, $entityTypeDefinition) {
-    $bundleKey = $entityTypeDefinition->getKey('bundle');
-    $bundleLabel = $this->bundleLabel($entityTypeDefinition);
-    $jsonBundleKey = null;
+  protected function jsonBundleKey($config, $bundleKey, $bundleLabel) {
     foreach($config['fields'] as $drupalName => $jsonConfig) {
       // These are all ways people are allowed to reference the
       // bundleId in their configuration. It doesn't matter which we
       // find as long as we find one.
       if ($drupalName == $bundleLabel || $drupalName == $bundleKey || $drupalName == 'bundle') {
-        $jsonBundleKey = $jsonConfig['as'];
-        break;
+        return $jsonConfig['as'];
       }
     }
+  }
 
-    // If our endpoint is limited to a single bundle, we can quit
-    // early already knowing the answer.
-    if (isset($config['bundles']) && count($config['bundles']) == 1) {
-      return [
-        "id" => $config['bundles'][0],
-        "jsonKey" => $jsonBundleKey,
-        "key" => $bundleKey
-      ];
+  protected function identifyBundle($payload, $config, $entityType, $entityTypeDefinition) {
+    $validBundles = array_keys($this->entityManager->getBundleInfo($entityType));
+    if (isset($config['bundles']) && count($config['bundles']) > 0) {
+      $validBundles = array_intersect($validBundles, $config['bundles']);
     }
 
-    if (!isset($jsonBundleKey)) {
-      throw new UnexpectedValueException("This endpoint encompasses multiple Drupal bundles, but you haven't exposed the bundle name in your API. So we can't tell what type of entity you're trying to create.");
+    $bundleKey = $entityTypeDefinition->getKey('bundle');
+    $bundleLabel = $this->bundleLabel($entityTypeDefinition);
+    $jsonBundleKey = $this->jsonBundleKey($config, $bundleKey, $bundleLabel);
+
+    if (!$jsonBundleKey) {
+      // User hasn't exposed bundle name into API
+      if (count($validBundles) == 1) {
+        // If there's only one valid choice, we're good.
+        return [
+          "id" => $validBundles[0],
+          "jsonKey" => null,
+          "key" => $bundleKey
+        ];
+      } else {
+        throw new UnexpectedValueException("This endpoint encompasses multiple Drupal bundles, but you haven't exposed the bundle name in your API. So we can't tell what type of entity you're trying to create.");
+      }
     }
 
     if ($jsonBundleKey == 'type' || $jsonBundleKey == 'id') {
@@ -203,10 +210,24 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
     }
 
     if (!isset($source[$jsonBundleKey])) {
-      throw new UnexpectedValueException("You must specificy " . $jsonBundleKey);
+      // User didn't send us a value for bundle
+      if (count($validBundles) == 1) {
+        // If there's only one valid choice, we're good.
+        return [
+          "id" => $validBundles[0],
+          "jsonKey" => $jsonBundleKey,
+          "key" => $bundleKey
+        ];
+      } else {
+        throw new UnexpectedValueException("You must specificy " . $jsonBundleKey . '. Valid values are: ' . join(', ', $validBundles));
+      }
     }
 
     $bundleId = $source[$jsonBundleKey];
+
+    if (!in_array($bundleId, $validBundles)) {
+      throw new UnexpectedValueException($bundleId . " is not a valid value for " . $jsonBundleKey . '. Valid values are: ' . join(', ', $validBundles));
+    }
 
     return [
       "id" => $bundleId,
@@ -234,6 +255,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
   }
 
   protected function denormalizeResource($req, $doc, $payload) {
+    $entityType = $req->entityType();
     $entityTypeDefinition = $this->entityManager->getDefinition($req->entityType(), FALSE);
     $bundle = $this->identifyBundle($payload, $req->config()['entryPoint'], $entityType, $entityTypeDefinition);
     $fieldDefinitions = $this->entityManager->getFieldDefinitions($req->entityType(), $bundle['id']);

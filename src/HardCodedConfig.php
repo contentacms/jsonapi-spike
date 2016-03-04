@@ -30,6 +30,7 @@ class HardCodedConfig {
           'title' => 'title',
           'status' => 'published',
           'changed' => 'changed',
+          'created' => 'created',
           // In this case we're choosing to make the Drupal
           // Content Type determine the JSONAPI type.
           'content-type' => 'type'
@@ -50,7 +51,8 @@ class HardCodedConfig {
               'field_byline' => 'byline',
               // field_topic is an entity reference,
               // which we're exposing as "topic"
-              'field_topic' => 'topic'
+              'field_topic' => 'topic',
+              'field_mobiledoc' => 'mobiledoc'
             ],
             // Embed related topic entities by default
             // (JSONAPI calls this is the "included"
