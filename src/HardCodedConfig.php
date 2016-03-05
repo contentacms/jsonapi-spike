@@ -108,6 +108,16 @@ class HardCodedConfig {
               'field_link_url'
             ]
           ],
+          'issue' => [
+            'fields' => [
+              'field_body',
+              'field_issue_type',
+              'field_primary_image',
+              'field_subtitle',
+              'field_summary'
+            ],
+            'defaultInclude' => ['primary-image', 'issue-type']
+          ],
           'course' => [
             'fields' => [
               'field_credit_types',
