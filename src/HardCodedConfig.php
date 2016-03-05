@@ -69,6 +69,7 @@ class HardCodedConfig {
               'field_contact_name',
               'field_credit_types',
               'field_end_date',
+              'field_event_type',
               'field_featured',
               'field_host',
               'field_lu_credit',
@@ -80,6 +81,7 @@ class HardCodedConfig {
               'field_speakers',
               'field_sponsors',
               'field_start_date',
+              'field_time_zone',
               'field_topic',
               'field_venue_address',
               'field_venue_city',
@@ -87,7 +89,8 @@ class HardCodedConfig {
               'field_venue_name',
               'field_venue_postal_code',
               'field_venue_state'
-            ]
+            ],
+            'defaultInclude' => ['topic', 'primary-image', 'event-type']
           ],
           'image' => [
             'fields' => [
@@ -108,7 +111,16 @@ class HardCodedConfig {
           'name' => 'name',
           'vocabulary' => 'type'
         ]
+      ],
+      '/event-types' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['event_types'],
+        'fields' => [
+          'name' => 'name',
+          'bundle' => 'type'
+        ]
       ]
+
     ]
   ];
 
