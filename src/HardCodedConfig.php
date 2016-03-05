@@ -92,6 +92,29 @@ class HardCodedConfig {
             ],
             'defaultInclude' => ['topic', 'primary-image', 'event-type']
           ],
+          'call_to_action' => [
+            'fields' => [
+              'field_featured',
+              'field_is_external_link',
+              'field_link_text',
+              'field_link_url',
+              'field_summary'
+            ]
+          ],
+          'contract_document' => [
+            'fields' => [
+              'field_document_family',
+              'field_document_number',
+              'field_link_url'
+            ]
+          ],
+          'course' => [
+            'fields' => [
+              'field_credit_types',
+              'field_link_url',
+              'field_lu_credit'
+            ]
+          ],
           'image' => [
             'fields' => [
               'title' => 'caption',
