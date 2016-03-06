@@ -50,7 +50,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
     $bundleLabel = $this->bundleLabel($object->getEntityType());
     return [
       'entity-type' => $object->getEntityTypeId(),
-      'id' => $object->id(),
+      'id' => (int)$object->id(),
       'bundle-label' => $bundleLabel,
       'bundle' => $object->bundle(),
       $bundleLabel => $object->bundle()
