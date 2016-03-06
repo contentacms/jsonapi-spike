@@ -263,37 +263,40 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
 
     foreach($req->fieldsFor($req->entityType(), $bundle['id']) as $drupalName => $jsonConfig) {
       $jsonName = $jsonConfig['as'];
-      if ($jsonName == $bundle['jsonKey']) {
-        // We already grabbed the bundle ID
-        continue;
+      if ($drupalName == 'id') {
+        $drupalName = $entityTypeDefinition->getKey('id');
       }
-      if ($jsonName == 'type') {
-        $inputs[$drupalName] = $payload['type'];
-      } else if ($jsonName == 'id' && isset($payload['id'])) {
-        $inputs[$drupalName] = $payload['id'];
-      } else if (isset($payload['attributes']) && array_key_exists($jsonName, $payload['attributes'])) {
-         $inputs[$drupalName] = $payload['attributes'][$jsonName];
-      } else if (isset($payload['relationships'][$jsonName]) && array_key_exists('data', $payload['relationships'][$jsonName])) {
-        if ($fieldDefinitions[$drupalName]->getFieldStorageDefinition()->isMultiple()) {
-          $inputs[$drupalName] = array_map(function($elt){ return ["target_id" => $elt['id']]; }, $payload['relationships'][$jsonName]['data']);
+      if ($jsonName == $bundle['jsonKey']) {
+        $drupalName = $bundle['key'];
+      }
+      $value = [];
+      $this->denormalizeField($payload, $drupalName, $jsonName, $jsonConfig, $fieldDefinitions[$drupalName], $value);
+      if (array_key_exists('result', $value)) {
+        $inputs[$drupalName] = $value['result'];
+      }
+    }
+    return new ResourceObject($payload, $inputs, $req->storage());
+  }
+
+  protected function denormalizeField($payload, $drupalName, $jsonName, $jsonConfig, $fieldDefinition, &$output) {
+    if ($jsonName == 'type') {
+      $output['result'] = $payload['type'];
+    } else if ($jsonName == 'id' && isset($payload['id'])) {
+      $output['result'] = $payload['id'];
+    } else if (isset($payload['attributes']) && array_key_exists($jsonName, $payload['attributes'])) {
+      $output['result'] = $payload['attributes'][$jsonName];
+    } else if (isset($payload['relationships'][$jsonName]) && array_key_exists('data', $payload['relationships'][$jsonName])) {
+      if ($fieldDefinition->getFieldStorageDefinition()->isMultiple()) {
+        $output['result'] = array_map(function($elt){ return ["target_id" => $elt['id']]; }, $payload['relationships'][$jsonName]['data']);
+      } else {
+        if (isset($payload['relationships'][$jsonName]['data']['id'])) {
+          $output['result'] = ["target_id" => $payload['relationships'][$jsonName]['data']['id'] ];
         } else {
-          if (isset($payload['relationships'][$jsonName]['data']['id'])) {
-            $inputs[$drupalName] = ["target_id" => $payload['relationships'][$jsonName]['data']['id'] ];
-          } else {
-            $inputs[$drupalName] = ["target_id" => null];
-          }
+          $output['result'] = ["target_id" => null];
         }
       }
     }
-
-    if (isset($inputs['id'])) {
-      $idKey = $entityTypeDefinition->getKey('id');
-      $inputs[$idKey] = $inputs['id'];
-      unset($inputs['id']);
-    }
-
-    $inputs[$bundle['key']] = $bundle['id'];
-    return new ResourceObject($payload, $inputs, $req->storage());
+    return $output;
   }
 
 }
