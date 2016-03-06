@@ -64,7 +64,7 @@ class HardCodedConfig {
           ],
           'event' => [
             'fields' => [
-              'field_agenda',
+              'field_agenda' => [ 'transform' => 'json'],
               'field_contact_email',
               'field_contact_name',
               'field_credit_types',
@@ -73,13 +73,13 @@ class HardCodedConfig {
               'field_featured',
               'field_host',
               'field_lu_credit',
-              'field_materials',
-              'field_overview',
+              'field_materials' => [ 'transform' => 'json'],
+              'field_overview' => [ 'transform' => 'json'],
               'field_primary_image',
               'field_register_url',
-              'field_registration',
-              'field_speakers',
-              'field_sponsors',
+              'field_registration' => [ 'transform' => 'json'],
+              'field_speakers' => [ 'transform' => 'json'],
+              'field_sponsors' => [ 'transform' => 'json'],
               'field_start_date',
               'field_time_zone',
               'field_topic',
@@ -98,7 +98,7 @@ class HardCodedConfig {
               'field_is_external_link',
               'field_link_text',
               'field_link_url',
-              'field_summary'
+              'field_summary' => [ 'transform' => 'json' ]
             ]
           ],
           'contract_document' => [
@@ -110,11 +110,11 @@ class HardCodedConfig {
           ],
           'issue' => [
             'fields' => [
-              'field_body',
+              'field_body' => [ 'transform' => 'json' ],
               'field_issue_type',
               'field_primary_image',
               'field_subtitle',
-              'field_summary'
+              'field_summary' => [ 'transform' => 'json' ]
             ],
             'defaultInclude' => ['primary-image', 'issue-type']
           ],
