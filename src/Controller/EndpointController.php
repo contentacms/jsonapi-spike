@@ -122,6 +122,8 @@ class EndpointController implements ContainerInjectionInterface {
       return $this->errorResponse(400, "Bad Request", "PATCH to an individual endpoint must contain a single resource");
     }
 
+    $originalId = $entity->id();
+
     $drupalInputs = $doc->data->drupal;
     foreach ($entity as $name => $field) {
       // Ignore read-only fields instead of throwing a 403. This is
@@ -133,6 +135,10 @@ class EndpointController implements ContainerInjectionInterface {
       if (array_key_exists($name, $drupalInputs) && $field->access('edit')) {
         $entity->set($name, $drupalInputs[$name]);
       }
+    }
+
+    if ($originalId != $entity->id()) {
+      return $this->errorResponse(403, "Forbidden", "You may not change an object's id");
     }
     $req->storage()->save($entity);
     $doc->data = $entity;
