@@ -8,6 +8,7 @@
 namespace Drupal\jsonapi\Normalizer;
 
 use Drupal\jsonapi\ResourceObject;
+use Drupal\jsonapi\Transforms;
 use Drupal\serialization\Normalizer\NormalizerBase;
 use Drupal\jsonapi\JsonApiEntityReference;
 use Drupal\Core\Field\EntityReferenceFieldItemList;
@@ -30,6 +31,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
 
   public function __construct($entityManager) {
     $this->entityManager = $entityManager;
+    $this->transforms = new Transforms();
   }
 
   protected function addMeta(&$record, $key, $value) {
@@ -95,6 +97,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
           $innerContext = $context;
           $innerContext['jsonapi_path'][] = $outputName;
           $child = $this->serializer->normalize($field, 'jsonapi', $innerContext);
+          $child = $this->transforms->normalize($child, $fields[$name]['transform']);
           if ($field instanceof EntityReferenceFieldItemList) {
             if (is_array($child)) {
               $relationships[$outputName] = ["data" => array_map(function($elt){
@@ -300,6 +303,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
     }
 
     if (array_key_exists('result', $output)) {
+      $output['result'] = $this->transforms->denormalize($output['result'], $jsonConfig['transform']);
       if (["value"] == $fieldDefinition->getPropertyNames()) {
         $downstreamClass = null;
         switch($fieldDefinition->getPropertyDefinition('value')->getDataType()) {

@@ -27,10 +27,10 @@ class HardCodedConfig {
         // it down smaller when they're uninterested in some
         // fields.
         'fields' => [
-          'title' => 'title',
+          'title',
           'status' => 'published',
-          'changed' => 'changed',
-          'created' => 'created',
+          'changed',
+          'created',
           // In this case we're choosing to make the Drupal
           // Content Type determine the JSONAPI type.
           'content-type' => 'type'
@@ -48,10 +48,10 @@ class HardCodedConfig {
           // they should appear.
           'article' => [
             'fields' => [
-              'field_body',
+              'field_body' => [ "transform" => "json" ],
               'field_byline',
               'field_primary_image',
-              'field_summary',
+              'field_summary' => [ "transform" => "json" ],
               'field_topic'
             ],
             // Embed related topic entities by default
@@ -256,11 +256,17 @@ class HardCodedConfig {
       foreach ($endpoint['fields'] as $key => $value) {
         if (is_numeric($key)) {
           $key = $value;
-          $value = strtolower(preg_replace('/^field-/', '', preg_replace('/_/', '-', $key)));
+          $value = [];
         }
-        if ($value == 'id') { $sawId = true; }
-        if ($value == 'type') { $sawType = true; }
-        $output[$key] = [ "as" => $value ];
+        if (!is_array($value)) {
+          $value = [ "as" => $value ];
+        }
+        if (!isset($value['as'])) {
+          $value['as'] = strtolower(preg_replace('/^field-/', '', preg_replace('/_/', '-', $key)));
+        }
+        if ($value['as'] == 'id') { $sawId = true; }
+        if ($value['as'] == 'type') { $sawType = true; }
+        $output[$key] = $value;
       }
     }
 
