@@ -168,6 +168,20 @@ class EndpointController implements ContainerInjectionInterface {
         $query->condition($drupalField, $values, 'IN');
       }
     }
+    if (isset($req->options()['sort'])) {
+      foreach($req->options()['sort'] as $name) {
+        $direction = 'ASC';
+        if (substr($name, 0, 1) == '-') {
+          $direction = 'DESC';
+          $name = substr($name, 1);
+        }
+        $drupalField = $req->jsonFieldToDrupalField(null, $name);
+        if (!$drupalField) {
+          return $this->errorResponse(400, "Bad Request", "Can't sort by " . $name);
+        }
+        $query->sort($drupalField, $direction);
+      }
+    }
     $entities = $req->storage()->loadMultiple($query->execute());
     $output = array_values(array_filter($entities, function($entity) { return $entity->access('view'); }));
     return new Response(new DocumentContext($req, $output), 200);

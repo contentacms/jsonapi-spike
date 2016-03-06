@@ -85,6 +85,9 @@ class RequestContext {
         if ($key == 'filter') {
           $output['filter'] = array_map(function($valueList){ return explode(',', $valueList); }, $value);
         }
+        if ($key == 'sort') {
+          $output['sort'] = explode(',', $value);
+        }
       }
       $this->_options = $output;
     }
@@ -184,13 +187,14 @@ class RequestContext {
 
   public function jsonFieldToDrupalField($bundleId, $jsonField) {
     $entityTypeDefinition = $this->entityManager->getDefinition($this->entityType(), FALSE);
-    $bundleKey = $entityTypeDefinition->getKey('bundle');
     $bundleLabel = $this->bundleLabel($entityTypeDefinition);
 
     foreach($this->fieldsFor($this->entityType(), $bundleId) as $drupalName => $jsonConfig) {
       if ($jsonConfig['as'] == $jsonField) {
         if ($drupalName == $bundleLabel || $drupalName == 'bundle') {
-          return $bundleKey;
+          return $entityTypeDefinition->getKey('bundle');
+        } else if ($drupalName == 'id') {
+          return $entityTypeDefinition->getKey('id');
         } else {
           return $drupalName;
         }
