@@ -122,8 +122,6 @@ class EndpointController implements ContainerInjectionInterface {
       return $this->errorResponse(400, "Bad Request", "PATCH to an individual endpoint must contain a single resource");
     }
 
-    $originalId = $entity->id();
-
     $drupalInputs = $doc->data->drupal;
     foreach ($entity as $name => $field) {
       // Ignore read-only fields instead of throwing a 403. This is
@@ -133,13 +131,14 @@ class EndpointController implements ContainerInjectionInterface {
       // also free to make its own arbitrary changes in response, as
       // long as they're reflected in the reply.
       if (array_key_exists($name, $drupalInputs) && $field->access('edit')) {
-        $entity->set($name, $drupalInputs[$name]);
+        $source = $doc->data->sources[$name];
+        // we don't accept changes to 'type' or 'id'.
+        if ($source != 'id' && $source != 'type') {
+          $entity->set($name, $drupalInputs[$name]);
+        }
       }
     }
 
-    if ($originalId != $entity->id()) {
-      return $this->errorResponse(403, "Forbidden", "You may not change an object's id");
-    }
     $req->storage()->save($entity);
     $doc->data = $entity;
 
@@ -280,7 +279,7 @@ class EndpointController implements ContainerInjectionInterface {
 
     $doc = $req->requestDocument();
     if (!$doc || !is_array($doc->data)) {
-      return $this->errorResponse(400, "Bad Request", "DELeTE to a one-to-many relationship endpoint must contain an array of resources");
+      return $this->errorResponse(400, "Bad Request", "DELETE to a one-to-many relationship endpoint must contain an array of resources");
     }
 
     $idsToDelete = [];

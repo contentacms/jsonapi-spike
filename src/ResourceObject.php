@@ -6,8 +6,8 @@ namespace Drupal\jsonapi;
    Represents a resource that has been sent to us by the client.
  */
 class ResourceObject {
-  public function __construct($json, $drupal, $storage) {
-    $this->json = $json;
+  public function __construct($sources, $drupal, $storage) {
+    $this->sources = $sources;
     $this->drupal = $drupal;
     $this->storage = $storage;
   }

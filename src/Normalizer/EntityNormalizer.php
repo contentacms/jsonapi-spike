@@ -260,6 +260,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
     $bundle = $this->identifyBundle($payload, $req->config()['entryPoint'], $entityType, $entityTypeDefinition);
     $fieldDefinitions = $this->entityManager->getFieldDefinitions($req->entityType(), $bundle['id']);
     $inputs = [];
+    $sources = [];
 
     foreach($req->fieldsFor($req->entityType(), $bundle['id']) as $drupalName => $jsonConfig) {
       $jsonName = $jsonConfig['as'];
@@ -273,9 +274,10 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
       $this->denormalizeField($payload, $drupalName, $jsonName, $jsonConfig, $fieldDefinitions[$drupalName]->getFieldStorageDefinition(), $value);
       if (array_key_exists('result', $value)) {
         $inputs[$drupalName] = $value['result'];
+        $sources[$drupalName] = $jsonName;
       }
     }
-    return new ResourceObject($payload, $inputs, $req->storage());
+    return new ResourceObject($sources, $inputs, $req->storage());
   }
 
   protected function denormalizeField($payload, $drupalName, $jsonName, $jsonConfig, $fieldDefinition, &$output) {
