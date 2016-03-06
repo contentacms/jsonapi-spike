@@ -307,6 +307,9 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
         case "timestamp":
           $downstreamClass = 'Drupal\Core\TypedData\Plugin\DataType\Timestamp';
           break;
+        case "integer":
+          $downstreamClass = 'Drupal\Core\TypedData\Plugin\DataType\IntegerData';
+          break;
         }
         if ($downstreamClass) {
           $output['result'] = $this->serializer->denormalize($output['result'], $downstreamClass, 'jsonapi', []);
