@@ -67,7 +67,7 @@ class HardCodedConfig {
               'field_agenda' => [ 'transform' => 'json'],
               'field_contact_email',
               'field_contact_name',
-              'field_credit_types',
+              'field_credit_types' => [ 'transform' => 'json'],
               'field_end_date',
               'field_event_type',
               'field_featured',
@@ -120,7 +120,7 @@ class HardCodedConfig {
           ],
           'course' => [
             'fields' => [
-              'field_credit_types',
+              'field_credit_types' => [ 'transform' => 'json' ],
               'field_link_url',
               'field_lu_credit'
             ]
@@ -128,7 +128,7 @@ class HardCodedConfig {
           'image' => [
             'fields' => [
               'title' => 'caption',
-              'field_crops',
+              'field_crops' => [ 'transform' => 'json'],
               'field_original_height',
               'field_original_width',
               'field_url' => 'url'
