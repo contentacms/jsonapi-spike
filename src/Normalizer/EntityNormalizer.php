@@ -270,7 +270,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
         $drupalName = $bundle['key'];
       }
       $value = [];
-      $this->denormalizeField($payload, $drupalName, $jsonName, $jsonConfig, $fieldDefinitions[$drupalName], $value);
+      $this->denormalizeField($payload, $drupalName, $jsonName, $jsonConfig, $fieldDefinitions[$drupalName]->getFieldStorageDefinition(), $value);
       if (array_key_exists('result', $value)) {
         $inputs[$drupalName] = $value['result'];
       }
@@ -286,13 +286,30 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
     } else if (isset($payload['attributes']) && array_key_exists($jsonName, $payload['attributes'])) {
       $output['result'] = $payload['attributes'][$jsonName];
     } else if (isset($payload['relationships'][$jsonName]) && array_key_exists('data', $payload['relationships'][$jsonName])) {
-      if ($fieldDefinition->getFieldStorageDefinition()->isMultiple()) {
+      if ($fieldDefinition->isMultiple()) {
         $output['result'] = array_map(function($elt){ return ["target_id" => $elt['id']]; }, $payload['relationships'][$jsonName]['data']);
       } else {
         if (isset($payload['relationships'][$jsonName]['data']['id'])) {
           $output['result'] = ["target_id" => $payload['relationships'][$jsonName]['data']['id'] ];
         } else {
           $output['result'] = ["target_id" => null];
+        }
+      }
+    }
+
+    if (array_key_exists('result', $output)) {
+      if (["value"] == $fieldDefinition->getPropertyNames()) {
+        $downstreamClass = null;
+        switch($fieldDefinition->getPropertyDefinition('value')->getDataType()) {
+        case "boolean":
+          $downstreamClass = 'Drupal\Core\TypedData\Plugin\DataType\BooleanData';
+          break;
+        case "timestamp":
+          $downstreamClass = 'Drupal\Core\TypedData\Plugin\DataType\Timestamp';
+          break;
+        }
+        if ($downstreamClass) {
+          $output['result'] = $this->serializer->denormalize($output['result'], $downstreamClass, 'jsonapi', []);
         }
       }
     }

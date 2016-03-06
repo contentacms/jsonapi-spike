@@ -20,6 +20,14 @@ services:
       class: Drupal\jsonapi\Normalizer\FieldItemListNormalizer
       tags:
         - { name: normalizer, priority: 21 }
+  jsonapi.normalizer.boolean:
+      class: Drupal\jsonapi\Normalizer\BooleanDataNormalizer
+      tags:
+        - { name: normalizer, priority: 0 }
+  jsonapi.normalizer.timestamp:
+      class: Drupal\jsonapi\Normalizer\TimestampNormalizer
+      tags:
+        - { name: normalizer, priority: 0 }
   jsonapi.normalizer.document_context:
       class: Drupal\jsonapi\Normalizer\DocumentContextNormalizer
       tags:
