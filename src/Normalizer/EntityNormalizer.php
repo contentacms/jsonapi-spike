@@ -33,7 +33,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
   }
 
   protected function addMeta(&$record, $key, $value) {
-    if (!$record['meta']) {
+    if (!isset($record['meta'])) {
       $record['meta'] = [];
     }
     $record['meta'][$key] = $value;
@@ -271,7 +271,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
         $inputs[$drupalName] = $payload['type'];
       } else if ($jsonName == 'id' && isset($payload['id'])) {
         $inputs[$drupalName] = $payload['id'];
-      } else if (array_key_exists($jsonName, $payload['attributes'])) {
+      } else if (isset($payload['attributes']) && array_key_exists($jsonName, $payload['attributes'])) {
          $inputs[$drupalName] = $payload['attributes'][$jsonName];
       } else if (isset($payload['relationships'][$jsonName]) && array_key_exists('data', $payload['relationships'][$jsonName])) {
         if ($fieldDefinitions[$drupalName]->getFieldStorageDefinition()->isMultiple()) {
