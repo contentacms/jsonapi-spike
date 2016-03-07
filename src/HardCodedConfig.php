@@ -127,6 +127,13 @@ class HardCodedConfig {
               'field_lu_credit'
             ]
           ],
+          'press_release' => [
+            'fields' => [
+              'field_body' => [ 'transform' => 'json' ],
+              'field_source',
+              'field_subtitle'
+            ]
+          ],
           'image' => [
             'fields' => [
               'title' => 'caption',
