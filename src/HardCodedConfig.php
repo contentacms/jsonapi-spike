@@ -67,7 +67,7 @@ class HardCodedConfig {
               'field_agenda' => [ 'transform' => 'json'],
               'field_contact_email',
               'field_contact_name',
-              'field_credit_types' => [ 'transform' => 'json'],
+              'field_credit_types',
               'field_end_date',
               'field_event_type',
               'field_featured',
@@ -92,7 +92,7 @@ class HardCodedConfig {
               'field_venue_postal_code',
               'field_venue_state'
             ],
-            'defaultInclude' => ['topic', 'primary-image', 'event-type']
+            'defaultInclude' => ['topic', 'primary-image', 'event-type', 'credit-types']
           ],
           'call_to_action' => [
             'fields' => [
@@ -122,10 +122,11 @@ class HardCodedConfig {
           ],
           'course' => [
             'fields' => [
-              'field_credit_types' => [ 'transform' => 'json' ],
+              'field_credit_types',
               'field_link_url',
               'field_lu_credit'
-            ]
+            ],
+            'defaultInclude' => ['credit-types']
           ],
           'press_release' => [
             'fields' => [
@@ -157,6 +158,14 @@ class HardCodedConfig {
       '/event-types' => [
         'entityType' => 'taxonomy_term',
         'bundles' => ['event_types'],
+        'fields' => [
+          'name' => 'name',
+          'bundle' => 'type'
+        ]
+      ],
+      '/credit-types' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['credit_types'],
         'fields' => [
           'name' => 'name',
           'bundle' => 'type'
