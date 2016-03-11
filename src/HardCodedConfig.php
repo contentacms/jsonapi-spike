@@ -170,8 +170,15 @@ class HardCodedConfig {
           'name' => 'name',
           'bundle' => 'type'
         ]
+      ],
+      '/issue-types' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['issue_types'],
+        'fields' => [
+          'name' => 'name',
+          'bundle' => 'type'
+        ]
       ]
-
     ]
   ];
 
