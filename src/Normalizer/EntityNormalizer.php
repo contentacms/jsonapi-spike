@@ -97,7 +97,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
           $innerContext = $context;
           $innerContext['jsonapi_path'][] = $outputName;
           $child = $this->serializer->normalize($field, 'jsonapi', $innerContext);
-          $child = $this->transforms->normalize($child, $fields[$name]['transform']);
+          $child = $this->transforms->normalize($child, isset($fields[$name]['transform']) ? $fields[$name]['transform'] : null);
           if ($field instanceof EntityReferenceFieldItemList) {
             if (is_array($child)) {
               $relationships[$outputName] = ["data" => array_map(function($elt){
@@ -274,7 +274,9 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
         $drupalName = $bundle['key'];
       }
       $value = [];
-      $this->denormalizeField($payload, $drupalName, $jsonName, $jsonConfig, $fieldDefinitions[$drupalName]->getFieldStorageDefinition(), $value);
+      if (isset($fieldDefinitions[$drupalName])) {
+        $this->denormalizeField($payload, $drupalName, $jsonName, $jsonConfig, $fieldDefinitions[$drupalName]->getFieldStorageDefinition(), $value);
+      }
       if (array_key_exists('result', $value)) {
         $inputs[$drupalName] = $value['result'];
         $sources[$drupalName] = $jsonName;
@@ -303,7 +305,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
     }
 
     if (array_key_exists('result', $output)) {
-      $output['result'] = $this->transforms->denormalize($output['result'], $jsonConfig['transform']);
+      $output['result'] = $this->transforms->denormalize($output['result'], isset($jsonConfig['transform']) ? $jsonConfig['transform'] : null);
       if (["value"] == $fieldDefinition->getPropertyNames()) {
         $downstreamClass = null;
         switch($fieldDefinition->getPropertyDefinition('value')->getDataType()) {

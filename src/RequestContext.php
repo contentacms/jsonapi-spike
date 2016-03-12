@@ -185,6 +185,29 @@ class RequestContext {
     return strtolower(preg_replace('/\s/', '-', $entityTypeDefinition->getBundleLabel()));
   }
 
+  protected function extendedBundles($entityType) {
+    $endpointConfig = $this->config()['scope']['endpoints'][$this->endpointFor($entityType, $bundleId)];
+    if (isset($endpointConfig['extensions'])) {
+      return array_keys($endpointConfig['extensions']);
+    } else {
+      return [];
+    }
+  }
+
+  // finds any number of matching drupal fields (scanning across all bundles)
+  public function jsonFieldToDrupalFields($jsonField) {
+    $bundles = $this->extendedBundles($this->entityType());
+    array_push($bundles, null); // this one checks the top-level, un-extended configuration
+    $output = [];
+    foreach($bundles as $bundle) {
+      $drupalField = $this->jsonFieldToDrupalfield($bundle, $jsonField);
+      if ($drupalField) {
+        $output[$drupalField] = true;
+      }
+    }
+    return array_keys($output);
+  }
+
   public function jsonFieldToDrupalField($bundleId, $jsonField) {
     $entityTypeDefinition = $this->entityManager->getDefinition($this->entityType(), FALSE);
     $bundleLabel = $this->bundleLabel($entityTypeDefinition);

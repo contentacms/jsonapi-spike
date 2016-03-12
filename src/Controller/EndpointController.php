@@ -161,11 +161,15 @@ class EndpointController implements ContainerInjectionInterface {
     }
     if (isset($req->options()['filter'])) {
       foreach($req->options()['filter'] as $name => $values) {
-        $drupalField = $req->jsonFieldToDrupalField(null, $name);
-        if (!$drupalField) {
+        $drupalFields = $req->jsonFieldToDrupalFields($name);
+        if (count($drupalFields) == 0) {
           return $this->errorResponse(400, "Bad Request", "Can't filter on " . $name);
         }
-        $query->condition($drupalField, $values, 'IN');
+        $group = $query->orConditionGroup();
+        foreach ($drupalFields as $drupalField) {
+          $group->condition($drupalField, $values, 'IN');
+        }
+        $query->condition($group);
       }
     }
     if (isset($req->options()['sort'])) {

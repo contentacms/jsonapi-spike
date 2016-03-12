@@ -143,8 +143,21 @@ class HardCodedConfig {
               'field_original_width',
               'field_url' => 'url'
             ]
+          ],
+          'member' => [
+            'fields' => [
+              'title' => 'member-id',
+              'field_professional_credentials'
+            ]
+          ],
+          'bookmark' => [
+            'fields' => [
+              'field_node_id',
+              'field_bookmark_type',
+              'field_member_id'
+            ]
           ]
-        ],
+        ]
       ],
       '/topics' => [
         'entityType' => 'taxonomy_term',
