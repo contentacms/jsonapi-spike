@@ -135,6 +135,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
 
     if ($req->debugEnabled()) {
       $this->addMeta($record, 'unused-fields', $unused);
+      $this->addMeta($record, 'identification', $coreFields);
     }
 
     return $record;
