@@ -51,8 +51,8 @@ class HardCodedConfig {
               'field_body' => [ "transform" => "json" ],
               'field_byline',
               'field_primary_image',
-              'field_summary' => [ "transform" => "json" ],
-              'field_topic'
+              'field_topic',
+              'field_description'
             ],
             // Embed related topic entities by default
             // (JSONAPI calls this is the "included"
@@ -90,7 +90,8 @@ class HardCodedConfig {
               'field_venue_country',
               'field_venue_name',
               'field_venue_postal_code',
-              'field_venue_state'
+              'field_venue_state',
+              'field_description'
             ],
             'defaultInclude' => ['topic', 'primary-image', 'event-type', 'credit-types']
           ],
@@ -100,14 +101,15 @@ class HardCodedConfig {
               'field_is_external_link',
               'field_link_text',
               'field_link_url',
-              'field_summary' => [ 'transform' => 'json' ]
+              'field_description'
             ]
           ],
           'contract_document' => [
             'fields' => [
               'field_document_family',
               'field_document_number',
-              'field_link_url'
+              'field_link_url',
+              'field_description'
             ]
           ],
           'issue' => [
@@ -116,7 +118,7 @@ class HardCodedConfig {
               'field_issue_type',
               'field_primary_image',
               'field_subtitle',
-              'field_summary' => [ 'transform' => 'json' ]
+              'field_description'
             ],
             'defaultInclude' => ['primary-image', 'issue-type']
           ],
@@ -124,7 +126,8 @@ class HardCodedConfig {
             'fields' => [
               'field_credit_types',
               'field_link_url',
-              'field_lu_credit'
+              'field_lu_credit',
+              'field_description'
             ],
             'defaultInclude' => ['credit-types']
           ],
@@ -136,7 +139,8 @@ class HardCodedConfig {
               'field_contact_phone',
               'field_contact_twitter',
               'field_source',
-              'field_subtitle'
+              'field_subtitle',
+              'field_description'
             ]
           ],
           'image' => [
@@ -145,7 +149,8 @@ class HardCodedConfig {
               'field_crops' => [ 'transform' => 'json'],
               'field_original_height',
               'field_original_width',
-              'field_url' => 'url'
+              'field_url' => 'url',
+              'field_description'
             ]
           ],
           'member' => [
