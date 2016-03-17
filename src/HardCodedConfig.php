@@ -131,6 +131,10 @@ class HardCodedConfig {
           'press_release' => [
             'fields' => [
               'field_body' => [ 'transform' => 'json' ],
+              'field_contact_email',
+              'field_contact_name',
+              'field_contact_phone',
+              'field_contact_twitter',
               'field_source',
               'field_subtitle'
             ]
