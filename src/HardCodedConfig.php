@@ -240,7 +240,7 @@ class HardCodedConfig {
           'vocabulary' => 'type'
         ]
       ],
-      '/resources-types' => [
+      '/resource-types' => [
         'entityType' => 'taxonomy_term',
         'bundles' => ['resource_types'],
         'fields' => [
