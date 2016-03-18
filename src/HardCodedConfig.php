@@ -200,6 +200,15 @@ class HardCodedConfig {
           'name' => 'name',
           'bundle' => 'type'
         ]
+      ],
+      '/global-terms' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['global_terms'],
+        'fields' => [
+          'name',
+          'bundle' => 'type',
+          'parent' => 'parents'
+        ]
       ]
     ]
   ];
