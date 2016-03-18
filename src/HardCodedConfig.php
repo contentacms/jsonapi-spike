@@ -177,7 +177,7 @@ class HardCodedConfig {
       ],
       '/audiences' => [
         'entityType' => 'taxonomy_term',
-        'bundles' => ['audiences'],
+        'bundles' => ['audience'],
         'fields' => [
           'name' => 'name',
           'vocabulary' => 'type'
