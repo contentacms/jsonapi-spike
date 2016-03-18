@@ -96,9 +96,17 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
         if ($req->shouldIncludeField($type, $outputName)) {
           $innerContext = $context;
           $innerContext['jsonapi_path'][] = $outputName;
+
+          // taxonomy term relationships need special handling. They
+          // don't load automatically like other entity references.
+          $isTaxonomyParent = ($name == 'parent' && $coreFields['entity-type'] == 'taxonomy_term');
+          if ($isTaxonomyParent) {
+            $field = array_values($req->storage()->loadParents($coreFields['id']));
+          }
+
           $child = $this->serializer->normalize($field, 'jsonapi', $innerContext);
           $child = $this->transforms->normalize($child, isset($fields[$name]['transform']) ? $fields[$name]['transform'] : null);
-          if ($field instanceof EntityReferenceFieldItemList) {
+          if ($field instanceof EntityReferenceFieldItemList || $isTaxonomyParent) {
             if (is_array($child)) {
               $relationships[$outputName] = ["data" => array_map(function($elt){
                 if ($elt instanceof JsonApiEntityReference) {
