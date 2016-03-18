@@ -52,7 +52,8 @@ class HardCodedConfig {
               'field_byline',
               'field_primary_image',
               'field_topic',
-              'field_description'
+              'field_description',
+              'field_audience'
             ],
             // Embed related topic entities by default
             // (JSONAPI calls this is the "included"
@@ -91,7 +92,8 @@ class HardCodedConfig {
               'field_venue_name',
               'field_venue_postal_code',
               'field_venue_state',
-              'field_description'
+              'field_description',
+              'field_audience'
             ],
             'defaultInclude' => ['topic', 'primary-image', 'event-type', 'credit-types']
           ],
@@ -118,7 +120,10 @@ class HardCodedConfig {
               'field_issue_type',
               'field_primary_image',
               'field_subtitle',
-              'field_description'
+              'field_description',
+              'field_legislative_affairs',
+              'field_topics',
+              'field_audience'
             ],
             'defaultInclude' => ['primary-image', 'issue-type']
           ],
@@ -140,7 +145,9 @@ class HardCodedConfig {
               'field_contact_twitter',
               'field_source',
               'field_subtitle',
-              'field_description'
+              'field_description',
+              'field_audience',
+              'field_topic'
             ]
           ],
           'image' => [
@@ -166,6 +173,14 @@ class HardCodedConfig {
               'field_member_id'
             ]
           ]
+        ]
+      ],
+      '/audiences' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['audiences'],
+        'fields' => [
+          'name' => 'name',
+          'vocabulary' => 'type'
         ]
       ],
       '/topics' => [
@@ -199,6 +214,38 @@ class HardCodedConfig {
         'fields' => [
           'name' => 'name',
           'bundle' => 'type'
+        ]
+      ],
+      '/issue-topics' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['issue_topics'],
+        'fields' => [
+          'name' => 'name',
+          'vocabulary' => 'type'
+        ]
+      ],
+      '/legislative-affairs' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['legislative_affairs'],
+        'fields' => [
+          'name' => 'name',
+          'vocabulary' => 'type'
+        ]
+      ],
+      '/product-and-service-types' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['product_and_service_types'],
+        'fields' => [
+          'name' => 'name',
+          'vocabulary' => 'type'
+        ]
+      ],
+      '/resources-types' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['resource_types'],
+        'fields' => [
+          'name' => 'name',
+          'vocabulary' => 'type'
         ]
       ],
       '/global-terms' => [
