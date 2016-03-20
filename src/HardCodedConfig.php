@@ -53,7 +53,8 @@ class HardCodedConfig {
               'field_primary_image',
               'field_topic',
               'field_description',
-              'field_audience'
+              'field_audience',
+              'field_tags'
             ],
             // Embed related topic entities by default
             // (JSONAPI calls this is the "included"
@@ -61,7 +62,7 @@ class HardCodedConfig {
             // by query param. These entities will be
             // rendered based on their own endpoint config
             // in this same api version.
-            'defaultInclude' => ['topic', 'primary-image']
+            'defaultInclude' => ['topic', 'primary-image', 'tags']
           ],
           'event' => [
             'fields' => [

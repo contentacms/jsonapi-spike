@@ -25,7 +25,11 @@ class RequestContext {
   }
 
   public function storage() {
-    return $this->entityManager->getStorage($this->entityType());
+    return $this->storageForType($this->entityType());
+  }
+
+  public function storageForType($entityType) {
+    return $this->entityManager->getStorage($entityType);
   }
 
   public function loadEntity() {
