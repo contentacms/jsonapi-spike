@@ -54,7 +54,11 @@ class HardCodedConfig {
               'field_topic',
               'field_description',
               'field_audience',
-              'field_tags'
+              'field_tags',
+              'field_publication_date',
+              'field_prioritization',
+              'field_members_only',
+              'field_featured'
             ],
             // Embed related topic entities by default
             // (JSONAPI calls this is the "included"
@@ -62,7 +66,24 @@ class HardCodedConfig {
             // by query param. These entities will be
             // rendered based on their own endpoint config
             // in this same api version.
-            'defaultInclude' => ['topic', 'primary-image', 'tags']
+            'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience']
+          ],
+          'general_page' => [
+            'fields' => [
+              'field_body' => [ "transform" => "json" ],
+              'field_byline',
+              'field_primary_image',
+              'field_topic',
+              'field_description',
+              'field_audience',
+              'field_tags',
+              'field_publication_date',
+              'field_prioritization',
+              'field_members_only',
+              'field_featured',
+              'field_product'
+            ],
+            'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'product']
           ],
           'event' => [
             'fields' => [
@@ -94,9 +115,13 @@ class HardCodedConfig {
               'field_venue_postal_code',
               'field_venue_state',
               'field_description',
-              'field_audience'
+              'field_audience',
+              'field_tags',
+              'field_publication_date',
+              'field_prioritization',
+              'field_members_only'
             ],
-            'defaultInclude' => ['topic', 'primary-image', 'event-type', 'credit-types']
+            'defaultInclude' => ['topic', 'primary-image', 'event-type', 'credit-types', 'audience', 'tags']
           ],
           'call_to_action' => [
             'fields' => [
@@ -104,16 +129,27 @@ class HardCodedConfig {
               'field_is_external_link',
               'field_link_text',
               'field_link_url',
-              'field_description'
-            ]
+              'field_description',
+              'field_tags',
+              'field_publication_date',
+              'field_prioritization',
+              'field_members_only'
+            ],
+            'defaultInclude' => ['tags']
           ],
           'contract_document' => [
             'fields' => [
               'field_document_family',
               'field_document_number',
               'field_link_url',
-              'field_description'
-            ]
+              'field_description',
+              'field_tags',
+              'field_publication_date',
+              'field_prioritization',
+              'field_members_only',
+              'field_featured'
+            ],
+            'defaultInclude' => ['tags']
           ],
           'issue' => [
             'fields' => [
@@ -124,18 +160,29 @@ class HardCodedConfig {
               'field_description',
               'field_legislative_affairs',
               'field_topics',
-              'field_audience'
+              'field_audience',
+              'field_issue_type',
+              'field_tags',
+              'field_publication_date',
+              'field_prioritization',
+              'field_members_only',
+              'field_featured'
             ],
-            'defaultInclude' => ['primary-image', 'issue-type']
+            'defaultInclude' => ['primary-image', 'issue-type', 'legislative-affairs', 'topics', 'audience', 'tags']
           ],
           'course' => [
             'fields' => [
               'field_credit_types',
               'field_link_url',
               'field_lu_credit',
-              'field_description'
+              'field_description',
+              'field_tags',
+              'field_publication_date',
+              'field_prioritization',
+              'field_members_only',
+              'field_featured'
             ],
-            'defaultInclude' => ['credit-types']
+            'defaultInclude' => ['tags', 'credit-types']
           ],
           'press_release' => [
             'fields' => [
@@ -148,8 +195,14 @@ class HardCodedConfig {
               'field_subtitle',
               'field_description',
               'field_audience',
-              'field_topic'
-            ]
+              'field_topic',
+              'field_tags',
+              'field_publication_date',
+              'field_prioritization',
+              'field_members_only',
+              'field_featured'
+            ],
+            'defaultInclude' => [ 'tags', 'audience', 'topic']
           ],
           'image' => [
             'fields' => [
