@@ -68,7 +68,7 @@ class HardCodedConfig {
             // in this same api version.
             'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience']
           ],
-          'general_page' => [
+          'page' => [
             'fields' => [
               'field_body' => [ "transform" => "json" ],
               'field_byline',
