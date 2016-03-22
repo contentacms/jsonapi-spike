@@ -51,6 +51,7 @@ class HardCodedConfig {
               'field_body' => [ "transform" => "json" ],
               'field_byline',
               'field_primary_image',
+              'field_primary_image_caption',
               'field_topic',
               'field_description',
               'field_audience',
@@ -73,6 +74,7 @@ class HardCodedConfig {
               'field_body' => [ "transform" => "json" ],
               'field_byline',
               'field_primary_image',
+              'field_primary_image_caption',
               'field_topic',
               'field_description',
               'field_audience',
@@ -101,6 +103,7 @@ class HardCodedConfig {
               'field_materials' => [ 'transform' => 'json'],
               'field_overview' => [ 'transform' => 'json'],
               'field_primary_image',
+              'field_primary_image_caption',
               'field_register_url',
               'field_registration' => [ 'transform' => 'json'],
               'field_speakers' => [ 'transform' => 'json'],
@@ -156,6 +159,7 @@ class HardCodedConfig {
               'field_body' => [ 'transform' => 'json' ],
               'field_issue_type',
               'field_primary_image',
+              'field_primary_image_caption',
               'field_subtitle',
               'field_description',
               'field_legislative_affairs',
@@ -206,12 +210,15 @@ class HardCodedConfig {
           ],
           'image' => [
             'fields' => [
-              'title' => 'caption',
+              'field_bytes',
+              'field_cloudinary_id',
+              'field_credit',
+              'field_filename',
+              'title' => 'description',
               'field_crops' => [ 'transform' => 'json'],
               'field_original_height',
               'field_original_width',
-              'field_url' => 'url',
-              'field_description'
+              'field_url' => 'url'
             ]
           ],
           'member' => [
