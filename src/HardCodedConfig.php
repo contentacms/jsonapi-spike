@@ -233,6 +233,20 @@ class HardCodedConfig {
               'field_bookmark_type',
               'field_member_id'
             ]
+          ],
+          'customization' => [
+            'fields' => [
+              'title' => 'route',
+              'field_first_image',
+              'field_second_image',
+              'field_third_image',
+              'field_first_box' => [ 'transform' => 'json' ],
+              'field_second_box' => [ 'transform' => 'json' ],
+              'field_third_box' => [ 'transform' => 'json' ],
+              'field_first_text_box',
+              'field_second_text_box',
+              'field_third_text_box'
+            ]
           ]
         ]
       ],
