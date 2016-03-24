@@ -219,6 +219,18 @@ class EndpointController implements ContainerInjectionInterface {
       return $this->errorResponse(403, "Access denied to " . $req->entityType(), "where id=" . $req->id());
     }
 
+    // Special handling for tracing taxonomy term reverse entity
+    // references, since they don't appear as fields on Term.
+    if ($req->entityType() === 'taxonomy_term' && $req->related() === 'tagged-with') {
+      $ids = db_query('SELECT nid FROM {taxonomy_index} WHERE tid = :tid', [
+        ":tid" => $req->id()
+      ])->fetchCol(0);
+      $entities = $req->storageForType('node')->loadMultiple($ids);
+      $doc = new DocumentContext($req, array_values($entities));
+      return new Response($doc, 200);
+    }
+
+
     $fieldName = $req->relatedAsDrupalField();
     if (!$fieldName) {
       return $this->errorResponse(400, "Bad Request", $req->related() . " is not a known field");
@@ -312,6 +324,14 @@ class EndpointController implements ContainerInjectionInterface {
     $req->storage()->save($entity);
     $doc->data = $list;
     return new Response($doc, 200);
+  }
+
+  protected function handleRelatedGET($req) {
+    // behaves exactly the same, except the normalizers will know to
+    // include full records instead of just references to records
+    // based on the request type being "related" and not
+    // "relationships"
+    return $this->handleRelationshipGET($req);
   }
 
   protected function errorResponse($statusCode, $title, $detail) {
