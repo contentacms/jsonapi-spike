@@ -71,8 +71,7 @@ class HardCodedConfig {
           ],
           'page' => [
             'fields' => [
-              'field_body' => [ "transform" => "json" ],
-              'field_byline',
+              'field_tabs' => [ "transform" => "json" ],
               'field_primary_image',
               'field_primary_image_caption',
               'field_topic',
