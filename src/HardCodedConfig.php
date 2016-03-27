@@ -260,7 +260,8 @@ class HardCodedConfig {
               'field_partner_with_us_link',
               'field_website',
               'field_partner_type'
-            ]
+            ],
+            'defaultInclude' => [ 'primary-image', 'partner-type']
           ]
 
         ]
