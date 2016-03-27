@@ -74,6 +74,7 @@ class HardCodedConfig {
               'field_tabs' => [ "transform" => "json" ],
               'field_primary_image',
               'field_primary_image_caption',
+              'field_primary_image_is_hero',
               'field_topic',
               'field_description',
               'field_audience',
