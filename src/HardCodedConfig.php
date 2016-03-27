@@ -247,7 +247,22 @@ class HardCodedConfig {
               'field_second_text_box',
               'field_third_text_box'
             ]
+          ],
+          'partner' => [
+            'fields' => [
+              'title' => 'name',
+              'field_primary_image',
+              'field_primary_image_caption',
+              'field_body' => ['transform' => 'json'],
+              'field_contact_info' => ['transform' => 'json'],
+              'field_discount_info' => ['transform' => 'json'],
+              'field_description',
+              'field_partner_with_us_link',
+              'field_website',
+              'field_partner_type'
+            ]
           ]
+
         ]
       ],
       '/audiences' => [
@@ -330,6 +345,14 @@ class HardCodedConfig {
           'name',
           'bundle' => 'type',
           'parent' => 'parents'
+        ]
+      ],
+      '/partner-types' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['partner_types'],
+        'fields' => [
+          'name',
+          'vocabulary' => 'type'
         ]
       ]
     ]
