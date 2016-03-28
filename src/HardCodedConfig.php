@@ -262,8 +262,32 @@ class HardCodedConfig {
               'field_partner_type'
             ],
             'defaultInclude' => [ 'primary-image', 'partner-type']
+          ],
+          'best_practice' => [
+            'fields' => [
+              'field_primary_image',
+              'field_subtitle',
+              'field_subchapter_number',
+              'field_subchapter_title',
+              'field_excerpt_note',
+              'field_summary' => [ 'transform' => 'json' ],
+              'field_body' => [ 'transform' => 'json' ],
+              'field_about_the_contributor' => [ 'transform' => 'json' ],
+              'field_topic',
+              'field_chapter',
+              'field_author_image',
+              'field_author_name',
+              'field_author_address',
+              'field_author_city',
+              'field_author_state',
+              'field_author_zip',
+              'field_author_phone',
+              'field_author_url',
+              'field_author_bio',
+              'field_additional_credits'
+            ],
+            'defaultInclude' => ['topic', 'primary-image', 'chapter', 'author-image']
           ]
-
         ]
       ],
       '/audiences' => [
@@ -355,7 +379,16 @@ class HardCodedConfig {
           'name',
           'vocabulary' => 'type'
         ]
+      ],
+      '/best-practice-chapters' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['best_practice_chapters'],
+        'fields' => [
+          'name',
+          'vocabulary' => 'type'
+        ]
       ]
+
     ]
   ];
 
