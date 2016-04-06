@@ -69,6 +69,25 @@ class HardCodedConfig {
             // in this same api version.
             'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience']
           ],
+          'resource' => [
+            'fields' => [
+              'field_body' => [ "transform" => "json" ],
+              'field_primary_image',
+              'field_primary_image_caption',
+              'field_topic',
+              'field_description',
+              'field_audience',
+              'field_tags',
+              'field_members_only',
+              'field_featured',
+              'field_attachments',
+              'field_attachment_urls' => [ "transform" => "json" ],
+              'field_link_url',
+              'field_resource_type',
+              'field_subtitle'
+            ],
+            'defaultInclude' => [ 'topic', 'primary-image', 'tags', 'audience', 'resource-types']
+          ],
           'page' => [
             'fields' => [
               'field_tabs' => [ "transform" => "json" ],
