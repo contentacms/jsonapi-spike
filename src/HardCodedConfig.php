@@ -267,6 +267,7 @@ class HardCodedConfig {
             'fields' => [
               'field_primary_image',
               'field_subtitle',
+              'field_description',
               'field_subchapter_number',
               'field_subchapter_title',
               'field_excerpt_note',
