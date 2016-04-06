@@ -80,9 +80,6 @@ class HardCodedConfig {
               'field_tags',
               'field_members_only',
               'field_featured',
-              'field_attachments',
-              'field_attachment_urls' => [ "transform" => "json" ],
-              'field_link_url',
               'field_resource_type',
               'field_subtitle'
             ],
@@ -294,6 +291,8 @@ class HardCodedConfig {
               'field_body' => [ 'transform' => 'json' ],
               'field_about_the_contributor' => [ 'transform' => 'json' ],
               'field_topic',
+              'field_members_only',
+              'field_featured',
               'field_chapter',
               'field_author_image',
               'field_author_name',
