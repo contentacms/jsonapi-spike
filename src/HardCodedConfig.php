@@ -73,7 +73,7 @@ class HardCodedConfig {
             'fields' => [
               'field_body' => [ "transform" => "json" ],
               'field_attachments_body' => [ "transform" => "json" ],
-              'field_references_body' => [ "transform" => "json" ],
+              'field_page_references' => [ "transform" => "json" ],
               'field_primary_image',
               'field_primary_image_caption',
               'field_topic',
