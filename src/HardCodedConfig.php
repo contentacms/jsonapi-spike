@@ -296,6 +296,7 @@ class HardCodedConfig {
               'field_subtitle',
               'field_description',
               'field_subchapter_number',
+              'field_subchapter_title',
               'field_deleted',
               'field_free_sample_link',
               'field_excerpt_note',
