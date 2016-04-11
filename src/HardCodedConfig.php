@@ -436,6 +436,14 @@ class HardCodedConfig {
           'name',
           'vocabulary' => 'type'
         ]
+      ],
+      '/document-families' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['document_family'],
+        'fields' => [
+          'name',
+          'vocabulary' => 'type'
+        ]
       ]
 
     ]
