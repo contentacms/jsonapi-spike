@@ -108,6 +108,27 @@ class HardCodedConfig {
             ],
             'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'product']
           ],
+          'award' => [
+            'fields' => [
+              'field_tabs' => [ "transform" => "json" ],
+              'field_first_box' => [ "transform" => "json" ],
+              'field_second_box' => [ "transform" => "json" ],
+              'field_primary_image',
+              'field_primary_image_caption',
+              'field_primary_image_is_hero',
+              'field_deleted',
+              'field_topic',
+              'field_description',
+              'field_audience',
+              'field_tags',
+              'field_publication_date',
+              'field_prioritization',
+              'field_members_only',
+              'field_featured',
+              'field_product'
+            ],
+            'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'product']
+          ],
           'event' => [
             'fields' => [
               'field_agenda' => [ 'transform' => 'json'],
