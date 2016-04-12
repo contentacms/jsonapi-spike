@@ -133,6 +133,39 @@ class HardCodedConfig {
             ],
             'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'product']
           ],
+          'showcase' => [
+            'fields' => [
+              'field_topic',
+              'field_primary_image',
+              'field_tags',
+              'field_audience',
+              'field_architect_image',
+              'field_architect_name',
+              'field_award_link',
+              'field_award_text',
+              'field_award_type',
+              'field_award_year',
+              'field_body' => [ "transform" => "json" ],
+              'field_credit' => [ "transform" => "json" ],
+              'field_deleted',
+              'field_featured',
+              'field_feature_type',
+              'field_firm_link',
+              'field_first_box' => [ "transform" => "json" ],
+              'field_jury' => [ "transform" => "json" ],
+              'field_members_only',
+              'field_project_address',
+              'field_project_city',
+              'field_project_state',
+              'field_project_postal_code',
+              'field_project_country',
+              'field_project_information' => [ "transform" => "json" ],
+              'field_project_name',
+              'field_showcase_images',
+              'field_sub_award_type'
+            ],
+            'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'architect-image', 'award-type', 'feature-type', 'showcase-images', 'sub-award-type']
+          ],
           'event' => [
             'fields' => [
               'field_agenda' => [ 'transform' => 'json'],
@@ -441,6 +474,30 @@ class HardCodedConfig {
       '/document-families' => [
         'entityType' => 'taxonomy_term',
         'bundles' => ['document_family'],
+        'fields' => [
+          'name',
+          'vocabulary' => 'type'
+        ]
+      ],
+      '/award-types' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['award_types'],
+        'fields' => [
+          'name',
+          'vocabulary' => 'type'
+        ]
+      ],
+      '/sub-award-types' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['sub_award_types'],
+        'fields' => [
+          'name',
+          'vocabulary' => 'type'
+        ]
+      ],
+      '/feature-types' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['feature_types'],
         'fields' => [
           'name',
           'vocabulary' => 'type'
