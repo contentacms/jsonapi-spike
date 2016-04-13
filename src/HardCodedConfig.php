@@ -137,9 +137,11 @@ class HardCodedConfig {
             'fields' => [
               'field_topic',
               'field_primary_image',
+              'field_primary_image_caption',
               'field_tags',
               'field_audience',
               'field_architect_image',
+              'field_architect_image_caption',
               'field_architect_name',
               'field_award_link',
               'field_award_text',
@@ -151,6 +153,7 @@ class HardCodedConfig {
               'field_featured',
               'field_feature_type',
               'field_firm_link',
+              'field_form_name',
               'field_first_box' => [ "transform" => "json" ],
               'field_jury' => [ "transform" => "json" ],
               'field_members_only',
@@ -162,6 +165,7 @@ class HardCodedConfig {
               'field_project_information' => [ "transform" => "json" ],
               'field_project_name',
               'field_showcase_images',
+              'field_showcase_image_captions' => [ "transform" => "json" ],
               'field_sub_award_type'
             ],
             'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'architect-image', 'award-type', 'feature-type', 'showcase-images', 'sub-award-type']
