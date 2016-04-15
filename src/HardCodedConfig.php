@@ -345,7 +345,8 @@ class HardCodedConfig {
               'field_third_box' => [ 'transform' => 'json' ],
               'field_first_text_box',
               'field_second_text_box',
-              'field_third_text_box'
+              'field_third_text_box',
+              'field_first_tile' => [ 'transform' => 'json' ],
             ]
           ],
           'partner' => [
