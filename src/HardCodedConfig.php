@@ -348,7 +348,8 @@ class HardCodedConfig {
               'field_description',
               'field_partner_with_us_link',
               'field_website',
-              'field_partner_type'
+              'field_partner_type',
+              'field_partner_news' => ['transform' => 'json'],
             ],
             'defaultInclude' => [ 'primary-image', 'partner-type']
           ],
