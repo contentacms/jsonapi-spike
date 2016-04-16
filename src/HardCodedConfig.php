@@ -54,7 +54,7 @@ class HardCodedConfig {
               'field_primary_image_caption',
               'field_deleted',
               'field_topic',
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_description',
               'field_audience',
               'field_tags',
@@ -69,7 +69,7 @@ class HardCodedConfig {
             // by query param. These entities will be
             // rendered based on their own endpoint config
             // in this same api version.
-            'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience']
+            'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'tile-sizes']
           ],
           'resource' => [
             'fields' => [
@@ -81,7 +81,7 @@ class HardCodedConfig {
               'field_topic',
               'field_deleted',
               'field_description',
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_audience',
               'field_tags',
               'field_members_only',
@@ -89,7 +89,7 @@ class HardCodedConfig {
               'field_resource_type',
               'field_subtitle'
             ],
-            'defaultInclude' => [ 'topic', 'primary-image', 'tags', 'audience', 'resource-types']
+            'defaultInclude' => [ 'topic', 'primary-image', 'tags', 'audience', 'resource-types', 'tile-sizes']
           ],
           'page' => [
             'fields' => [
@@ -101,7 +101,7 @@ class HardCodedConfig {
               'field_deleted',
               'field_topic',
               'field_description',
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_audience',
               'field_tags',
               'field_publication_date',
@@ -110,7 +110,7 @@ class HardCodedConfig {
               'field_featured',
               'field_product'
             ],
-            'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'product']
+            'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'product', 'tile-sizes']
           ],
           'award' => [
             'fields' => [
@@ -124,7 +124,7 @@ class HardCodedConfig {
               'field_deleted',
               'field_topic',
               'field_link_text',
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_link_url',
               'field_description',
               'field_audience',
@@ -135,7 +135,7 @@ class HardCodedConfig {
               'field_featured',
               'field_product'
             ],
-            'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'product']
+            'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'product', 'tile-sizes']
           ],
           'showcase' => [
             'fields' => [
@@ -158,7 +158,7 @@ class HardCodedConfig {
               'field_feature_type',
               'field_firm_link',
               'field_form_name',
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_first_box' => [ "transform" => "json" ],
               'field_jury' => [ "transform" => "json" ],
               'field_members_only',
@@ -173,7 +173,7 @@ class HardCodedConfig {
               'field_showcase_image_captions' => [ "transform" => "json" ],
               'field_sub_award_type'
             ],
-            'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'architect-image', 'award-type', 'feature-type', 'showcase-images', 'sub-award-type']
+            'defaultInclude' => ['topic', 'primary-image', 'tags', 'audience', 'architect-image', 'award-type', 'feature-type', 'showcase-images', 'sub-award-type', 'tile-sizes']
           ],
           'event' => [
             'fields' => [
@@ -192,7 +192,7 @@ class HardCodedConfig {
               'field_materials' => [ 'transform' => 'json'],
               'field_overview' => [ 'transform' => 'json'],
               'field_primary_image',
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_primary_image_caption',
               'field_register_url',
               'field_registration' => [ 'transform' => 'json'],
@@ -214,7 +214,7 @@ class HardCodedConfig {
               'field_prioritization',
               'field_members_only'
             ],
-            'defaultInclude' => ['topic', 'primary-image', 'event-type', 'credit-types', 'audience', 'tags']
+            'defaultInclude' => ['topic', 'primary-image', 'event-type', 'credit-types', 'audience', 'tags', 'tile-sizes']
           ],
           'call_to_action' => [
             'fields' => [
@@ -226,11 +226,11 @@ class HardCodedConfig {
               'field_description',
               'field_tags',
               'field_publication_date',
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_prioritization',
               'field_members_only'
             ],
-            'defaultInclude' => ['tags']
+            'defaultInclude' => ['tags', 'tile-sizes']
           ],
           'contract_document' => [
             'fields' => [
@@ -238,7 +238,7 @@ class HardCodedConfig {
               'field_document_number',
               'field_link_url',
               'field_deleted',
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_description',
               'field_tags',
               'field_publication_date',
@@ -246,7 +246,7 @@ class HardCodedConfig {
               'field_members_only',
               'field_featured'
             ],
-            'defaultInclude' => ['tags']
+            'defaultInclude' => ['tags', 'tile-sizes']
           ],
           'issue' => [
             'fields' => [
@@ -261,14 +261,14 @@ class HardCodedConfig {
               'field_deleted',
               'field_audience',
               'field_issue_type',
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_tags',
               'field_publication_date',
               'field_prioritization',
               'field_members_only',
               'field_featured'
             ],
-            'defaultInclude' => ['primary-image', 'issue-type', 'legislative-affairs', 'topics', 'audience', 'tags']
+            'defaultInclude' => ['primary-image', 'issue-type', 'legislative-affairs', 'topics', 'audience', 'tags', 'tile-sizes']
           ],
           'course' => [
             'fields' => [
@@ -278,13 +278,13 @@ class HardCodedConfig {
               'field_deleted',
               'field_description',
               'field_tags',
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_publication_date',
               'field_prioritization',
               'field_members_only',
               'field_featured'
             ],
-            'defaultInclude' => ['tags', 'credit-types']
+            'defaultInclude' => ['tags', 'credit-types', 'tile-sizes']
           ],
           'press_release' => [
             'fields' => [
@@ -294,7 +294,7 @@ class HardCodedConfig {
               'field_contact_phone',
               'field_contact_twitter',
               'field_source',
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_subtitle',
               'field_description',
               'field_deleted',
@@ -359,12 +359,12 @@ class HardCodedConfig {
               'field_discount_info' => ['transform' => 'json'],
               'field_description',
               'field_partner_with_us_link',
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_website',
               'field_partner_type',
               'field_partner_news' => ['transform' => 'json'],
             ],
-            'defaultInclude' => [ 'primary-image', 'partner-type']
+            'defaultInclude' => [ 'primary-image', 'partner-type', 'tile-sizes']
           ],
           'best_practice' => [
             'fields' => [
@@ -377,7 +377,7 @@ class HardCodedConfig {
               'field_free_sample_link',
               'field_excerpt_note',
               'field_product_reference' => [ 'transform' => 'json' ],
-              'field_tile_sizes' => [ "transform" => "json" ],
+              'field_tile_sizes',
               'field_summary' => [ 'transform' => 'json' ],
               'field_body' => [ 'transform' => 'json' ],
               'field_about_the_contributor' => [ 'transform' => 'json' ],
@@ -388,7 +388,7 @@ class HardCodedConfig {
               'field_chapter',
               'field_author_image'
             ],
-            'defaultInclude' => ['topic', 'tags', 'audience', 'primary-image', 'chapter', 'author-image']
+            'defaultInclude' => ['topic', 'tags', 'audience', 'primary-image', 'chapter', 'author-image', 'tile-sizes']
           ]
         ]
       ],
@@ -509,6 +509,14 @@ class HardCodedConfig {
       '/sub-award-types' => [
         'entityType' => 'taxonomy_term',
         'bundles' => ['sub_award_types'],
+        'fields' => [
+          'name',
+          'vocabulary' => 'type'
+        ]
+      ],
+      '/tile-sizes' => [
+        'entityType' => 'taxonomy_term',
+        'bundles' => ['tile_sizes'],
         'fields' => [
           'name',
           'vocabulary' => 'type'
