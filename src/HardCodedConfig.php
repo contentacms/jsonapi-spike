@@ -59,7 +59,7 @@ class HardCodedConfig {
               'field_audience',
               'field_tags',
               'field_hero_headline',
-              'field_hero_link_text'
+              'field_hero_link_text',
               'field_publication_date',
               'field_prioritization',
               'field_members_only',
@@ -128,7 +128,7 @@ class HardCodedConfig {
               'field_link_text',
               'field_tile_sizes',
               'field_hero_headline',
-              'field_hero_link_text'
+              'field_hero_link_text',
               'field_link_url',
               'field_description',
               'field_audience',
@@ -161,7 +161,7 @@ class HardCodedConfig {
               'field_featured',
               'field_feature_type',
               'field_hero_headline',
-              'field_hero_link_text'
+              'field_hero_link_text',
               'field_firm_link',
               'field_form_name',
               'field_tile_sizes',
@@ -192,7 +192,7 @@ class HardCodedConfig {
               'field_deleted',
               'field_featured',
               'field_hero_headline',
-              'field_hero_link_text'
+              'field_hero_link_text',
               'field_host',
               'field_link_text',
               'field_lu_credit',
@@ -263,7 +263,7 @@ class HardCodedConfig {
               'field_primary_image_caption',
               'field_subtitle',
               'field_hero_headline',
-              'field_hero_link_text'
+              'field_hero_link_text',
               'field_description',
               'field_legislative_affairs',
               'field_topics',
