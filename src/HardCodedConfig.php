@@ -284,6 +284,7 @@ class HardCodedConfig {
               'field_publication_date',
               'field_prioritization',
               'field_members_only',
+              'field_take_action_url',
               'field_featured'
             ],
             'defaultInclude' => ['primary-image', 'issue-type', 'legislative-affairs', 'topics', 'audience', 'tags', 'tile-sizes']
