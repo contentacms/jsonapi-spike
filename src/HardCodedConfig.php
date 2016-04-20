@@ -273,6 +273,7 @@ class HardCodedConfig {
               'field_subtitle',
               'field_hero_headline',
               'field_hero_link_text',
+              'field_byline',
               'field_description',
               'field_legislative_affairs',
               'field_topics',
