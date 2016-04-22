@@ -233,6 +233,7 @@ class HardCodedConfig {
           ],
           'call_to_action' => [
             'fields' => [
+              'field_audience',
               'field_featured',
               'field_is_external_link',
               'field_deleted',
@@ -243,10 +244,12 @@ class HardCodedConfig {
               'field_tags',
               'field_publication_date',
               'field_tile_sizes',
+              'field_topic',
               'field_prioritization',
+              'field_use_on_homepage',
               'field_members_only'
             ],
-            'defaultInclude' => ['tags', 'tile-sizes']
+            'defaultInclude' => ['tags', 'tile-sizes', 'topic', 'audience']
           ],
           'contract_document' => [
             'fields' => [
