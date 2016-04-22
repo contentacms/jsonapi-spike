@@ -276,7 +276,7 @@ class HardCodedConfig {
               'field_byline',
               'field_description',
               'field_legislative_affairs',
-              'field_topics',
+              'field_topic',
               'field_deleted',
               'field_audience',
               'field_issue_type',
@@ -288,7 +288,7 @@ class HardCodedConfig {
               'field_take_action_url',
               'field_featured'
             ],
-            'defaultInclude' => ['primary-image', 'issue-type', 'legislative-affairs', 'topics', 'audience', 'tags', 'tile-sizes']
+            'defaultInclude' => ['primary-image', 'issue-type', 'legislative-affairs', 'topic', 'audience', 'tags', 'tile-sizes']
           ],
           'course' => [
             'fields' => [
