@@ -102,6 +102,8 @@ class HardCodedConfig {
               'field_primary_image',
               'field_primary_image_caption',
               'field_primary_image_is_hero',
+              'field_link_text',
+              'field_link_url',
               'field_deleted',
               'field_topic',
               'field_description',
