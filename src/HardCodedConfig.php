@@ -99,6 +99,8 @@ class HardCodedConfig {
             'fields' => [
               'field_tabs' => [ "transform" => "json" ],
               'field_body' => [ "transform" => "json" ],
+              'field_first_box' => [ "transform" => "json" ],
+              'field_second_box' => [ "transform" => "json" ],
               'field_primary_image',
               'field_primary_image_caption',
               'field_primary_image_is_hero',
