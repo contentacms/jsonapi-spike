@@ -166,6 +166,7 @@ class HardCodedConfig {
               'field_body' => [ "transform" => "json" ],
               'field_credit' => [ "transform" => "json" ],
               'field_deleted',
+              'field_description',
               'field_featured',
               'field_feature_type',
               'field_hero_headline',
