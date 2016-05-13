@@ -19,15 +19,33 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 use Drupal\Component\Serialization\Json;
 
+use Drupal\Core\Entity\EntityManagerInterface;
+
+use Symfony\Component\Serializer\SerializerInterface;
+
 class EndpointController implements ContainerInjectionInterface {
 
-  public function __construct($serializer, $entityQuery, $entityManager) {
+  /**
+   * Constructs an EndpointController object.
+   *
+   * @param Symfony\Component\Serializer\SerializerInterface $serializer
+   *   The serializer service.
+   * @param Drupal\Core\Entity\Query\QueryFactory $entity_query
+   *   The entity query factory service.
+   * @param Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   *   The entity manager service.
+   */
+  public function __construct(SerializerInterface $serializer, $entity_query, EntityManagerInterface $entity_manager, $logger_factory) {
     $this->config = new HardCodedConfig();
     $this->serializer = $serializer;
-    $this->entityQuery = $entityQuery;
-    $this->entityManager = $entityManager;
+    $this->entityQuery = $entity_query;
+    $this->entityManager = $entity_manager;
+    $this->loggerFactory = $logger_factory;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('serializer'),
@@ -36,8 +54,15 @@ class EndpointController implements ContainerInjectionInterface {
     );
   }
 
-  // We don't want to let exceptions bubble out to the rest of Drupal,
-  // because it will send back HTML, and we want to send back JSON.
+  /**
+   * Wraps a handler call to catch errors and serve useful response.
+   *
+   * We don't want to let exceptions bubble out to the rest of Drupal, because
+   * it will send back HTML, and we want to send back JSON.
+   *
+   * @param $fn
+   *   A callable function which returns a response.
+  */
   protected function withErrorTrap($fn) {
     try {
       return $fn();
@@ -49,8 +74,13 @@ class EndpointController implements ContainerInjectionInterface {
     }
   }
 
-  public function handle(Request $request, $_route, $scope, $endpoint, $id=null, $related=null) {
-
+  /**
+   * Handles a request.
+   *
+   * @param Symfony\Component\HttpFoundation\Request $request
+   *   A request object.
+   */
+  public function handle(Request $request, $_route, $scope, $endpoint, $id = NULL, $related = NULL) {
     $req = new RequestContext(
       $this->config,
       $this->serializer,
@@ -79,8 +109,17 @@ class EndpointController implements ContainerInjectionInterface {
     });
   }
 
-  protected function handleIndividualGet($req) {
-    $entity = $req->loadEntity();
+  /**
+   * Handles a GET request for a single resource.
+   *
+   * @param Drupal\jsonapi\RequestContext $request
+   *   The request context.
+   *
+   * @return Drupal\jsonapi\Response
+   *   The response.
+   */
+  protected function handleIndividualGet($request) {
+    $entity = $request->loadEntity();
 
     if (!$entity) {
       return $this->errorResponse(404, $req->entityType() . " not found", "where id=" . $req->id());
@@ -92,8 +131,17 @@ class EndpointController implements ContainerInjectionInterface {
     return new Response(new DocumentContext($req, $entity), 200);
   }
 
-  protected function handleIndividualDelete($req) {
-    $entity = $req->loadEntity();
+  /**
+   * Handles a DELETE request for a single resource.
+   *
+   * @param Drupal\jsonapi\RequestContext $request
+   *   The request context.
+   *
+   * @return Symfony\Component\HttpFoundation\Response
+   *   The response.
+   */
+  protected function handleIndividualDelete($request) {
+    $entity = $request->loadEntity();
 
     if (!$entity) {
       return $this->errorResponse(404, $req->entityType() . " not found", "where id=" . $req->id());
@@ -106,8 +154,17 @@ class EndpointController implements ContainerInjectionInterface {
     return new SymfonyResponse(NULL, 204);
   }
 
-  protected function handleIndividualPatch($req) {
-    $entity = $req->loadEntity();
+  /**
+   * Handles a PATCH request for a single resource.
+   *
+   * @param Drupal\jsonapi\RequestContext $request
+   *   The request context.
+   *
+   * @return Drupal\jsonapi\Response
+   *   The response.
+   */
+  protected function handleIndividualPatch($request) {
+    $entity = $request->loadEntity();
 
     if (!$entity) {
       return $this->errorResponse(404, $req->entityType() . " not found", "where id=" . $req->id());
@@ -149,11 +206,19 @@ class EndpointController implements ContainerInjectionInterface {
     return new Response($doc, 200);
   }
 
-
-  protected function handleCollectionGet($req) {
-    $query = $this->entityQuery->get($req->entityType());
-    if (isset($req->config()['entryPoint']['bundles'])) {
-      $bundles = $req->config()['entryPoint']['bundles'];
+  /**
+   * Handles a GET request for a collection resource.
+   *
+   * @param Drupal\jsonapi\RequestContext $request
+   *   The request context.
+   *
+   * @return Drupal\jsonapi\Response
+   *   The response.
+   */
+  protected function handleCollectionGet($request) {
+    $query = $this->entityQuery->get($request->entityType());
+    if (isset($request->config()['entryPoint']['bundles'])) {
+      $bundles = $request->config()['entryPoint']['bundles'];
       if (count($bundles) > 0) {
         $entity_type = $this->entityManager->getDefinition($req->entityType(), FALSE);
         $query->condition($entity_type->getKey('bundle'), $bundles, 'IN');
@@ -172,27 +237,36 @@ class EndpointController implements ContainerInjectionInterface {
         $query->condition($group);
       }
     }
-    if (isset($req->options()['sort'])) {
-      foreach($req->options()['sort'] as $name) {
+    if (isset($request->options()['sort'])) {
+      foreach($request->options()['sort'] as $name) {
         $direction = 'ASC';
         if (substr($name, 0, 1) == '-') {
           $direction = 'DESC';
           $name = substr($name, 1);
         }
-        $drupalField = $req->jsonFieldToDrupalField(null, $name);
+        $drupalField = $request->jsonFieldToDrupalField(NULL, $name);
         if (!$drupalField) {
           return $this->errorResponse(400, "Bad Request", "Can't sort by " . $name);
         }
         $query->sort($drupalField, $direction);
       }
     }
-    $entities = $req->storage()->loadMultiple($query->execute());
+    $entities = $request->storage()->loadMultiple($query->execute());
     $output = array_values(array_filter($entities, function($entity) { return $entity->access('view'); }));
-    return new Response(new DocumentContext($req, $output), 200);
+    return new Response(new DocumentContext($request, $output), 200);
   }
 
-  protected function handleCollectionPost($req) {
-    $doc = $req->requestDocument();
+  /**
+   * Handles a POST request for a collection resource.
+   *
+   * @param Drupal\jsonapi\RequestContext $request
+   *   The request context.
+   *
+   * @return Drupal\jsonapi\Response
+   *   The response.
+   */
+  protected function handleCollectionPost($request) {
+    $doc = $request->requestDocument();
     if (!$doc || is_array($doc->data)) {
       return $this->errorResponse(400, "Bad Request", "POST to a collection endpoint must contain a single resource");
     }
@@ -321,21 +395,44 @@ class EndpointController implements ContainerInjectionInterface {
       return !array_key_exists($elt->target_id, $idsToDelete);
     });
 
-    $req->storage()->save($entity);
+    $request->storage()->save($entity);
     $doc->data = $list;
     return new Response($doc, 200);
   }
 
-  protected function handleRelatedGet($req) {
+  /**
+   * Handles a GET request for a related resource.
+   *
+   * @param Drupal\jsonapi\RequestContext $request
+   *   The request context.
+   *
+   * @return Drupal\jsonapi\Response
+   *   The response.
+   *
+   * @see Drupal\jsonapi\Controller\EndpointController::handleRelationshipGet()
+   */
+  protected function handleRelatedGet($request) {
     // behaves exactly the same, except the normalizers will know to
     // include full records instead of just references to records
     // based on the request type being "related" and not
     // "relationships"
-    return $this->handleRelationshipGet($req);
+    return $this->handleRelationshipGet($request);
   }
 
+  /**
+   * Creates an error response object.
+   *
+   * @param string $status_code
+   *   The status code for the response.
+   * @param string $title
+   *   The title of the response.
+   * @param string $detail
+   *   The details of the error.
+   *
+   * @return Symfony\Component\HttpFoundation\Response
+   */
   protected function errorResponse($statusCode, $title, $detail) {
-    # http://jsonapi.org/format/#error-objects
+    // @see: http://jsonapi.org/format/#error-objects
     $body = Json::encode([
       "errors" => [[
         "title" => $title,
