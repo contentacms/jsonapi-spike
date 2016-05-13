@@ -66,10 +66,21 @@ class EndpointController implements ContainerInjectionInterface {
   protected function withErrorTrap($fn) {
     try {
       return $fn();
-    } catch(UnexpectedValueException $exception) {
+    }
+    catch (UnexpectedValueException $exception) {
       return $this->errorResponse(400, "Bad request", $exception->getMessage());
-    } catch (\Exception $exception) {
-      error_log(sprintf('Uncaught PHP Exception %s: "%s" at %s line %s', get_class($exception), $exception->getMessage(), $exception->getFile(), $exception->getLine()));
+    }
+    catch (\Exception $exception) {
+      $message = sprintf(
+        'Uncaught PHP Exception %s: "%s" at %s line %s',
+        get_class($exception),
+        $exception->getMessage(),
+        $exception->getFile(),
+        $exception->getLine()
+      );
+
+      $this->loggerFactory->get('jsonapi')->error($message);
+
       return $this->errorResponse(500, "Unexpected error", "See server logs");
     }
   }
@@ -97,7 +108,8 @@ class EndpointController implements ContainerInjectionInterface {
       $handler = $req->handlerName();
       if (is_callable([$this, $handler])) {
         $response = $this->{$handler}($req);
-      } else {
+      }
+      else {
         $response = $this->errorResponse(500, "Not implemented", $handler . " endpoint not implemented.");
       }
       if ($response instanceof Response && $data = $response->getResponseData()) {
@@ -122,13 +134,22 @@ class EndpointController implements ContainerInjectionInterface {
     $entity = $request->loadEntity();
 
     if (!$entity) {
-      return $this->errorResponse(404, $req->entityType() . " not found", "where id=" . $req->id());
+      return $this->errorResponse(
+        404,
+        $req->entityType() . " not found",
+        "where id=" . $request->id()
+      );
     }
 
     if (!$entity->access('view')) {
-      return $this->errorResponse(403, "Access denied to " . $req->entityType(), "where id=" . $req->id());
+      return $this->errorResponse(
+        403,
+        "Access denied to " . $request->entityType(),
+        "where id=" . $req->id()
+      );
     }
-    return new Response(new DocumentContext($req, $entity), 200);
+
+    return new Response(new DocumentContext($request, $entity), 200);
   }
 
   /**
@@ -144,13 +165,13 @@ class EndpointController implements ContainerInjectionInterface {
     $entity = $request->loadEntity();
 
     if (!$entity) {
-      return $this->errorResponse(404, $req->entityType() . " not found", "where id=" . $req->id());
+      return $this->errorResponse(404, $request->entityType() . " not found", "where id=" . $request->id());
     }
 
     if (!$entity->access('delete')) {
-      return $this->errorResponse(403, "Access denied to " . $req->entityType(), "where id=" . $req->id());
+      return $this->errorResponse(403, "Access denied to " . $request->entityType(), "where id=" . $request->id());
     }
-    $req->storage()->delete([$entity]);
+    $request->storage()->delete([$entity]);
     return new SymfonyResponse(NULL, 204);
   }
 
@@ -167,14 +188,14 @@ class EndpointController implements ContainerInjectionInterface {
     $entity = $request->loadEntity();
 
     if (!$entity) {
-      return $this->errorResponse(404, $req->entityType() . " not found", "where id=" . $req->id());
+      return $this->errorResponse(404, $request->entityType() . " not found", "where id=" . $request->id());
     }
 
     if (!$entity->access('edit')) {
-      return $this->errorResponse(403, "Access denied to " . $req->entityType(), "where id=" . $req->id());
+      return $this->errorResponse(403, "Access denied to " . $request->entityType(), "where id=" . $request->id());
     }
 
-    $doc = $req->requestDocument();
+    $doc = $request->requestDocument();
     if (!$doc || is_array($doc->data)) {
       return $this->errorResponse(400, "Bad Request", "PATCH to an individual endpoint must contain a single resource");
     }
@@ -196,7 +217,7 @@ class EndpointController implements ContainerInjectionInterface {
       }
     }
 
-    $req->storage()->save($entity);
+    $request->storage()->save($entity);
     $doc->data = $entity;
 
     // TODO: the spec says we should return 200 if we changed anything
@@ -220,13 +241,13 @@ class EndpointController implements ContainerInjectionInterface {
     if (isset($request->config()['entryPoint']['bundles'])) {
       $bundles = $request->config()['entryPoint']['bundles'];
       if (count($bundles) > 0) {
-        $entity_type = $this->entityManager->getDefinition($req->entityType(), FALSE);
+        $entity_type = $this->entityManager->getDefinition($request->entityType(), FALSE);
         $query->condition($entity_type->getKey('bundle'), $bundles, 'IN');
       }
     }
-    if (isset($req->options()['filter'])) {
-      foreach($req->options()['filter'] as $name => $values) {
-        $drupalFields = $req->jsonFieldToDrupalFields($name);
+    if (isset($request->options()['filter'])) {
+      foreach($request->options()['filter'] as $name => $values) {
+        $drupalFields = $request->jsonFieldToDrupalFields($name);
         if (count($drupalFields) == 0) {
           return $this->errorResponse(400, "Bad Request", "Can't filter on " . $name);
         }
@@ -281,65 +302,82 @@ class EndpointController implements ContainerInjectionInterface {
       return $this->errorResponse(403, "Forbidden", "You are not authorized to create this entity.");
     }
 
-    $req->storage()->save($entity);
+    $request->storage()->save($entity);
     $doc->data = $entity;
     return new Response($doc, 201);
   }
 
-  protected function handleRelationshipGet($req) {
-    $entity = $req->loadEntity();
+  /**
+   * Handles a GET request for a relationship resource.
+   *
+   * @param Drupal\jsonapi\RequestContext $request
+   *   The request context.
+   *
+   * @return Drupal\jsonapi\Response
+   *   The response.
+   */
+  protected function handleRelationshipGet($request) {
+    $entity = $request->loadEntity();
 
     if (!$entity->access('view')) {
-      return $this->errorResponse(403, "Access denied to " . $req->entityType(), "where id=" . $req->id());
+      return $this->errorResponse(403, "Access denied to " . $request->entityType(), "where id=" . $request->id());
     }
 
     // Special handling for tracing taxonomy term reverse entity
     // references, since they don't appear as fields on Term.
-    if ($req->entityType() === 'taxonomy_term' && $req->related() === 'tagged-with') {
+    if ($request->entityType() === 'taxonomy_term' && $request->related() === 'tagged-with') {
       $ids = db_query('SELECT nid FROM {taxonomy_index} WHERE tid = :tid', [
-        ":tid" => $req->id()
+        ":tid" => $request->id()
       ])->fetchCol(0);
-      $entities = $req->storageForType('node')->loadMultiple($ids);
-      $doc = new DocumentContext($req, array_values($entities));
+      $entities = $request->storageForType('node')->loadMultiple($ids);
+      $doc = new DocumentContext($request, array_values($entities));
       return new Response($doc, 200);
     }
 
 
-    $fieldName = $req->relatedAsDrupalField();
+    $fieldName = $request->relatedAsDrupalField();
     if (!$fieldName) {
-      return $this->errorResponse(400, "Bad Request", $req->related() . " is not a known field");
+      return $this->errorResponse(400, "Bad Request", $request->related() . " is not a known field");
     }
 
-    $doc = new DocumentContext($req, $entity->get($fieldName));
+    $doc = new DocumentContext($request, $entity->get($fieldName));
     if (!$doc->data instanceof EntityReferenceFieldItemList) {
-      return $this->errorResponse(400, "Bad Request", $req->related() . " is not a relationship");
+      return $this->errorResponse(400, "Bad Request", $request->related() . " is not a relationship");
     }
     return new Response($doc, 200);
   }
 
-
-  protected function handleRelationshipPost($req) {
-    $entity = $req->loadEntity();
+  /**
+   * Handles a POST request for a relationship resource.
+   *
+   * @param Drupal\jsonapi\RequestContext $request
+   *   The request context.
+   *
+   * @return Drupal\jsonapi\Response
+   *   The response.
+   */
+  protected function handleRelationshipPost($request) {
+    $entity = $request->loadEntity();
 
     if (!$entity->access('edit')) {
-      return $this->errorResponse(403, "Access denied to " . $req->entityType(), "where id=" . $req->id());
+      return $this->errorResponse(403, "Access denied to " . $request->entityType(), "where id=" . $request->id());
     }
 
-    $fieldName = $req->relatedAsDrupalField();
+    $fieldName = $request->relatedAsDrupalField();
     if (!$fieldName) {
-      return $this->errorResponse(400, "Bad Request", $req->related() . " is not a known field");
+      return $this->errorResponse(400, "Bad Request", $request->related() . " is not a known field");
     }
 
     $list = $entity->get($fieldName);
     if (!$list instanceof EntityReferenceFieldItemList) {
-      return $this->errorResponse(400, "Bad Request", $req->related() . " is not a relationship");
+      return $this->errorResponse(400, "Bad Request", $request->related() . " is not a relationship");
     }
 
-    if (!$req->isOneToManyRelationship()) {
+    if (!$request->isOneToManyRelationship()) {
       return $this->errorResponse(405, "Method Not Allowed", "You may not POST a one-to-one relationship endpoint, use PATCH");
     }
 
-    $doc = $req->requestDocument();
+    $doc = $request->requestDocument();
     if (!$doc || !is_array($doc->data)) {
       return $this->errorResponse(400, "Bad Request", "POST to a one-to-many relationship endpoint must contain an array of resources");
     }
@@ -355,33 +393,42 @@ class EndpointController implements ContainerInjectionInterface {
         $existingIds[$item['target_id']] = true;
       }
     }
-    $req->storage()->save($entity);
+    $request->storage()->save($entity);
     $doc->data = $list;
     return new Response($doc, 200);
   }
 
-  protected function handleRelationshipDelete($req) {
-    $entity = $req->loadEntity();
+  /**
+   * Handles a DELETE request for a relationship resource.
+   *
+   * @param Drupal\jsonapi\RequestContext $request
+   *   The request context.
+   *
+   * @return Drupal\jsonapi\Response
+   *   The response.
+   */
+  protected function handleRelationshipDelete($request) {
+    $entity = $request->loadEntity();
 
     if (!$entity->access('edit')) {
-      return $this->errorResponse(403, "Access denied to " . $req->entityType(), "where id=" . $req->id());
+      return $this->errorResponse(403, "Access denied to " . $request->entityType(), "where id=" . $request->id());
     }
 
-    $fieldName = $req->relatedAsDrupalField();
+    $fieldName = $request->relatedAsDrupalField();
     if (!$fieldName) {
-      return $this->errorResponse(400, "Bad Request", $req->related() . " is not a known field");
+      return $this->errorResponse(400, "Bad Request", $request->related() . " is not a known field");
     }
 
     $list = $entity->get($fieldName);
     if (!$list instanceof EntityReferenceFieldItemList) {
-      return $this->errorResponse(400, "Bad Request", $req->related() . " is not a relationship");
+      return $this->errorResponse(400, "Bad Request", $request->related() . " is not a relationship");
     }
 
-    if (!$req->isOneToManyRelationship()) {
+    if (!$request->isOneToManyRelationship()) {
       return $this->errorResponse(405, "Method Not Allowed", "You may not DELETE a one-to-one relationship endpoint, use PATCH");
     }
 
-    $doc = $req->requestDocument();
+    $doc = $request->requestDocument();
     if (!$doc || !is_array($doc->data)) {
       return $this->errorResponse(400, "Bad Request", "DELETE to a one-to-many relationship endpoint must contain an array of resources");
     }
@@ -442,7 +489,11 @@ class EndpointController implements ContainerInjectionInterface {
     // This is a SymfonyResponse and not our own Response type so that
     // it's independent of our serialization step (since errors can
     // happen during that step itself)
-    return new SymfonyResponse($body, $statusCode, ["Content-Type" => 'application/vnd.api+json'] );
+    return new SymfonyResponse(
+      $body,
+      $statusCode,
+      ["Content-Type" => 'application/vnd.api+json']
+    );
   }
 
 }
