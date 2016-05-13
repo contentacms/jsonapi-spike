@@ -21,7 +21,9 @@ class RequestContext {
   }
 
   public function handlerName() {
-    return 'handle' . ucwords($this->requestType()) . $this->request->getMethod();
+    $request_type = $this->requestType();
+    $method = ucfirst(strtolower($this->request->getMethod()));
+    return sprintf('handle%s%s', $request_type, $method);
   }
 
   public function storage() {

@@ -79,7 +79,7 @@ class EndpointController implements ContainerInjectionInterface {
     });
   }
 
-  protected function handleIndividualGET($req) {
+  protected function handleIndividualGet($req) {
     $entity = $req->loadEntity();
 
     if (!$entity) {
@@ -92,7 +92,7 @@ class EndpointController implements ContainerInjectionInterface {
     return new Response(new DocumentContext($req, $entity), 200);
   }
 
-  protected function handleIndividualDELETE($req) {
+  protected function handleIndividualDelete($req) {
     $entity = $req->loadEntity();
 
     if (!$entity) {
@@ -103,10 +103,10 @@ class EndpointController implements ContainerInjectionInterface {
       return $this->errorResponse(403, "Access denied to " . $req->entityType(), "where id=" . $req->id());
     }
     $req->storage()->delete([$entity]);
-    return new SymfonyResponse(null, 204);
+    return new SymfonyResponse(NULL, 204);
   }
 
-  protected function handleIndividualPATCH($req) {
+  protected function handleIndividualPatch($req) {
     $entity = $req->loadEntity();
 
     if (!$entity) {
@@ -150,7 +150,7 @@ class EndpointController implements ContainerInjectionInterface {
   }
 
 
-  protected function handleCollectionGET($req) {
+  protected function handleCollectionGet($req) {
     $query = $this->entityQuery->get($req->entityType());
     if (isset($req->config()['entryPoint']['bundles'])) {
       $bundles = $req->config()['entryPoint']['bundles'];
@@ -191,7 +191,7 @@ class EndpointController implements ContainerInjectionInterface {
     return new Response(new DocumentContext($req, $output), 200);
   }
 
-  protected function handleCollectionPOST($req) {
+  protected function handleCollectionPost($req) {
     $doc = $req->requestDocument();
     if (!$doc || is_array($doc->data)) {
       return $this->errorResponse(400, "Bad Request", "POST to a collection endpoint must contain a single resource");
@@ -212,7 +212,7 @@ class EndpointController implements ContainerInjectionInterface {
     return new Response($doc, 201);
   }
 
-  protected function handleRelationshipGET($req) {
+  protected function handleRelationshipGet($req) {
     $entity = $req->loadEntity();
 
     if (!$entity->access('view')) {
@@ -244,7 +244,7 @@ class EndpointController implements ContainerInjectionInterface {
   }
 
 
-  protected function handleRelationshipPOST($req) {
+  protected function handleRelationshipPost($req) {
     $entity = $req->loadEntity();
 
     if (!$entity->access('edit')) {
@@ -286,7 +286,7 @@ class EndpointController implements ContainerInjectionInterface {
     return new Response($doc, 200);
   }
 
-  protected function handleRelationshipDELETE($req) {
+  protected function handleRelationshipDelete($req) {
     $entity = $req->loadEntity();
 
     if (!$entity->access('edit')) {
@@ -326,12 +326,12 @@ class EndpointController implements ContainerInjectionInterface {
     return new Response($doc, 200);
   }
 
-  protected function handleRelatedGET($req) {
+  protected function handleRelatedGet($req) {
     // behaves exactly the same, except the normalizers will know to
     // include full records instead of just references to records
     // based on the request type being "related" and not
     // "relationships"
-    return $this->handleRelationshipGET($req);
+    return $this->handleRelationshipGet($req);
   }
 
   protected function errorResponse($statusCode, $title, $detail) {
