@@ -30,6 +30,7 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
 
 
   public function __construct($entityManager) {
+    parent::__construct();
     $this->entityManager = $entityManager;
     $this->transforms = new Transforms();
   }
