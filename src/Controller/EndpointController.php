@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\jsonapi\Controller\EndpointController.
- */
 
 namespace Drupal\jsonapi\Controller;
 

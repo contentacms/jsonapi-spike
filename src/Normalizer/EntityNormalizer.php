@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\jsonapi\Normalizer\EntityNormalizer.
- */
-
 namespace Drupal\jsonapi\Normalizer;
 
 use Drupal\jsonapi\ResourceObject;
@@ -26,29 +21,61 @@ class EntityNormalizer extends NormalizerBase implements DenormalizerInterface {
    * @var array
    */
   protected $supportedInterfaceOrClass = ['Drupal\Core\Entity\EntityInterface'];
+
+  /**
+   * The format for this normalizer.
+   *
+   * @var string
+   */
   protected $format = array('jsonapi');
 
-
-  public function __construct($entityManager) {
+  /**
+   * Creates a new EntityNormalizer object.
+   *
+   * @param Drupal\Core\Entity\EntityManager $entity_manager
+   *   The Drupal entity manager service.
+   */
+  public function __construct($entity_manager) {
     parent::__construct();
-    $this->entityManager = $entityManager;
+    $this->entityManager = $entity_manager;
+    // @todo: this should probably be injected.
     $this->transforms = new Transforms();
   }
 
+  /**
+   * Adds a value to the meta section of the record.
+   *
+   * @param array $record
+   *   The record to modify.
+   * @param string $key
+   *   The key for the new item.
+   * @param mixed $value
+   *   The value for the new item.
+   */
   protected function addMeta(&$record, $key, $value) {
     if (!isset($record['meta'])) {
       $record['meta'] = [];
     }
+    // @todo: should this fail if the value is already set?
     $record['meta'][$key] = $value;
   }
 
-  protected function bundleLabel($entityTypeDefinition) {
-    return strtolower(preg_replace('/\s/', '-', $entityTypeDefinition->getBundleLabel()));
+  /**
+   * Get a JSONAPI compliant label from a bundle name.
+   */
+  protected function bundleLabel($entity_type) {
+    return strtolower(preg_replace('/\s/', '-', $entity_type->getBundleLabel()));
   }
 
-  // This exposes fields (in the JSONAPI sense) that are not fields
-  // in the Drupal sense. They are eligible to be included as record
-  // attributes or serve as the record's `type` or `id`.
+  /**
+   * Associates entity properties as JSON API fields.
+   *
+   * They are eligible to be included as record attributes or serve as the
+   * record's `type` or `id`.
+   *
+   * @param object $object
+   *   The entity being serialized.
+   */
   protected function coreFields($object) {
     $bundleLabel = $this->bundleLabel($object->getEntityType());
     return [

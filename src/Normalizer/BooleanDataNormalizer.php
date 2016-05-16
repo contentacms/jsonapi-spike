@@ -1,11 +1,7 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\jsonapi\Normalizer\BooleanDataNormalizer.
- */
-
 namespace Drupal\jsonapi\Normalizer;
+
 use Drupal\serialization\Normalizer\NormalizerBase;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
@@ -17,6 +13,12 @@ class BooleanDataNormalizer extends NormalizerBase implements DenormalizerInterf
    * @var string
    */
   protected $supportedInterfaceOrClass = 'Drupal\Core\TypedData\Plugin\DataType\BooleanData';
+
+  /**
+   * The format for this normalizer.
+   *
+   * @var string
+   */
   protected $format = array('jsonapi');
 
   /**
@@ -26,6 +28,9 @@ class BooleanDataNormalizer extends NormalizerBase implements DenormalizerInterf
     return $object->getCastedValue();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function denormalize($payload, $class, $format = NULL, array $context = []) {
     if ($payload) {
       return ["value" => "1"];

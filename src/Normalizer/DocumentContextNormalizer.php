@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\jsonapi\Normalizer\DocumentContextNormalizer.
- */
-
 namespace Drupal\jsonapi\Normalizer;
 
 use Drupal\serialization\Normalizer\NormalizerBase;
@@ -40,6 +35,9 @@ class DocumentContextNormalizer extends NormalizerBase implements DenormalizerIn
     return $attributes;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function denormalize($payload, $class, $format = NULL, array $context = []) {
     if (!isset($payload['data'])) {
       throw new UnexpectedValueException("Incoming JSONAPI document had no 'data' member");
@@ -61,7 +59,8 @@ class DocumentContextNormalizer extends NormalizerBase implements DenormalizerIn
       $resources = [];
       foreach($data as $item) {
         if (!isset($item['type'])) {
-          throw new UnexpectedValueException("data must contain either a single object with a type, or a list of objects with types");
+          $message = "Data must contain either a single object with a type, or a list of objects with types.";
+          throw new UnexpectedValueException($message);
         }
         array_push($resources, $this->denormalizeResource($item, $context));
       }
@@ -70,8 +69,16 @@ class DocumentContextNormalizer extends NormalizerBase implements DenormalizerIn
     return $document;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function denormalizeResource($payload, $context) {
-    return $this->serializer->denormalize($payload, 'Drupal\Core\Entity\Entity', 'jsonapi', $context);
+    return $this->serializer->denormalize(
+      $payload,
+      'Drupal\Core\Entity\Entity',
+      'jsonapi',
+      $context
+    );
   }
 
 }
